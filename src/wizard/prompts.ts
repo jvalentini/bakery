@@ -13,6 +13,11 @@ export interface ProjectConfig {
   includeReleaseWorkflow: boolean;
   includeDocs: boolean;
   includeSecurity: boolean;
+  includeDependabot: boolean;
+  includeZod: boolean;
+  includeNeverthrow: boolean;
+  includePackageValidation: boolean;
+  includeStrictestConfig: boolean;
 }
 
 const rl = readline.createInterface({
@@ -28,13 +33,13 @@ function question(prompt: string): Promise<string> {
   });
 }
 
-function detectGitUser(): { name?: string; email?: string } {
+function detectGitUser(): { name: string | undefined; email: string | undefined } {
   try {
     const name = execSync('git config --get user.name', { encoding: 'utf8' }).trim();
     const email = execSync('git config --get user.email', { encoding: 'utf8' }).trim();
     return { name: name || undefined, email: email || undefined };
   } catch {
-    return {};
+    return { name: undefined, email: undefined };
   }
 }
 
@@ -106,11 +111,13 @@ async function promptSelect<T extends string>(
 
   while (true) {
     const answer = await question(`${dim('Enter number')} [${defaultIndex + 1}]: `);
-    if (!answer) return options[defaultIndex].value;
+    const defaultOption = options[defaultIndex];
+    if (!answer && defaultOption !== undefined) return defaultOption.value;
 
     const num = parseInt(answer, 10);
-    if (num >= 1 && num <= options.length) {
-      return options[num - 1].value;
+    const selectedOption = options[num - 1];
+    if (num >= 1 && num <= options.length && selectedOption !== undefined) {
+      return selectedOption.value;
     }
     console.error(red(`  Please enter a number between 1 and ${options.length}`));
   }
@@ -170,8 +177,27 @@ export async function runPrompts(): Promise<ProjectConfig> {
   const includeReleaseWorkflow = includeCi
     ? await promptConfirm('Include release workflow (auto-build binaries)?', true)
     : false;
+  const includeDependabot = includeCi
+    ? await promptConfirm('Include Dependabot (automated dependency updates)?', true)
+    : false;
   const includeDocs = await promptConfirm('Include TypeDoc (API documentation)?', true);
   const includeSecurity = await promptConfirm('Include Trivy (security scanning)?', true);
+
+  console.error(`\n${bold(blue('🔒 Type Safety'))}\n`);
+
+  const includeStrictestConfig = await promptConfirm(
+    'Use @tsconfig/strictest (maximum type safety)?',
+    true
+  );
+  const includeZod = await promptConfirm('Include Zod (runtime type validation)?', true);
+  const includeNeverthrow = await promptConfirm(
+    'Include neverthrow (type-safe error handling)?',
+    true
+  );
+  const includePackageValidation = await promptConfirm(
+    'Include publint + attw (package validation)?',
+    true
+  );
 
   console.error(`\n${bold(green('✓ Configuration complete!'))}\n`);
 
@@ -186,6 +212,11 @@ export async function runPrompts(): Promise<ProjectConfig> {
     includeReleaseWorkflow,
     includeDocs,
     includeSecurity,
+    includeDependabot,
+    includeZod,
+    includeNeverthrow,
+    includePackageValidation,
+    includeStrictestConfig,
   };
 }
 
@@ -206,8 +237,22 @@ export function printSummary(config: ProjectConfig, outputDir: string): void {
     console.error(
       `  ${dim('Release:')}     ${config.includeReleaseWorkflow ? green('Yes') : yellow('No')}`
     );
+    console.error(
+      `  ${dim('Dependabot:')}  ${config.includeDependabot ? green('Yes') : yellow('No')}`
+    );
   }
   console.error(`  ${dim('Docs:')}        ${config.includeDocs ? green('Yes') : yellow('No')}`);
   console.error(`  ${dim('Security:')}    ${config.includeSecurity ? green('Yes') : yellow('No')}`);
-  console.error(`  ${dim('Output:')}      ${outputDir}`);
+  console.error(bold(cyan('\n🔒 Type Safety\n')));
+  console.error(
+    `  ${dim('Strictest:')}   ${config.includeStrictestConfig ? green('Yes') : yellow('No')}`
+  );
+  console.error(`  ${dim('Zod:')}         ${config.includeZod ? green('Yes') : yellow('No')}`);
+  console.error(
+    `  ${dim('neverthrow:')}  ${config.includeNeverthrow ? green('Yes') : yellow('No')}`
+  );
+  console.error(
+    `  ${dim('Pkg Valid:')}   ${config.includePackageValidation ? green('Yes') : yellow('No')}`
+  );
+  console.error(`\n  ${dim('Output:')}      ${outputDir}`);
 }

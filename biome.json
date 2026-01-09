@@ -45,7 +45,8 @@
       },
       "complexity": {
         "noForEach": "off",
-        "useSimplifiedLogicExpression": "warn"
+        "useSimplifiedLogicExpression": "warn",
+        "useLiteralKeys": "off"
       },
       "performance": {
         "noDelete": "error"

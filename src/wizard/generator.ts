@@ -37,18 +37,6 @@ function createContext(config: ProjectConfig): TemplateContext {
   };
 }
 
-function _replaceTemplateVars(content: string, context: TemplateContext): string {
-  return content
-    .replace(/\{\{projectName\}\}/g, context.projectName)
-    .replace(/\{\{projectNamePascal\}\}/g, context.projectNamePascal)
-    .replace(/\{\{description\}\}/g, context.description)
-    .replace(/\{\{author\}\}/g, context.author)
-    .replace(/\{\{license\}\}/g, context.license)
-    .replace(/\{\{githubUsername\}\}/g, context.githubUsername)
-    .replace(/\{\{githubUrl\}\}/g, context.githubUrl)
-    .replace(/\{\{year\}\}/g, String(context.year));
-}
-
 function writeFile(filePath: string, content: string): void {
   const dir = path.dirname(filePath);
   if (!fs.existsSync(dir)) {
@@ -101,12 +89,25 @@ function generatePackageJson(context: TemplateContext, config: ProjectConfig): s
         docs: 'typedoc',
         'docs:watch': 'typedoc --watch',
       }),
+      ...(config.includePackageValidation && {
+        'check:exports': 'bunx publint && bunx attw --pack',
+        publint: 'bunx publint',
+        attw: 'bunx attw --pack',
+      }),
     },
     keywords: ['cli', 'typescript', 'bun'],
     author: context.author,
     license: context.license,
     engines: {
       bun: '>=1.0.0',
+    },
+    dependencies: {
+      ...(config.includeZod && {
+        zod: '^3.24.0',
+      }),
+      ...(config.includeNeverthrow && {
+        neverthrow: '^8.2.0',
+      }),
     },
     devDependencies: {
       '@biomejs/biome': '^2.3.11',
@@ -115,13 +116,30 @@ function generatePackageJson(context: TemplateContext, config: ProjectConfig): s
       lefthook: '^2.0.13',
       oxlint: '^1.38.0',
       typescript: '^5.0.0',
+      ...(config.includeStrictestConfig && {
+        '@tsconfig/strictest': '^2.0.0',
+      }),
       ...(config.includeDocs && {
         typedoc: '^0.27.0',
+      }),
+      ...(config.includePackageValidation && {
+        publint: '^0.3.0',
+        '@arethetypeswrong/cli': '^0.18.0',
       }),
     },
   };
 
-  return `${JSON.stringify(pkg, null, 2)}\n`;
+  // Filter out empty objects for cleaner JSON output
+  const cleanPkg = Object.fromEntries(
+    Object.entries(pkg).filter(([_, value]) => {
+      if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+        return Object.keys(value).length > 0;
+      }
+      return true;
+    })
+  );
+
+  return `${JSON.stringify(cleanPkg, null, 2)}\n`;
 }
 
 function generateCliTs(context: TemplateContext): string {
@@ -419,7 +437,45 @@ export const Logger = {
 `;
 }
 
-function generateTsConfig(): string {
+function generateTsConfig(config: ProjectConfig): string {
+  if (config.includeStrictestConfig) {
+    return `{
+  "extends": "@tsconfig/strictest/tsconfig.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "lib": ["ES2022"],
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "allowJs": true,
+
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "exactOptionalPropertyTypes": true,
+    "verbatimModuleSyntax": true,
+
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "moduleDetection": "force",
+    "isolatedModules": true,
+
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "types": ["bun-types"]
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist", "tests"]
+}
+`;
+  }
+
   return `{
   "compilerOptions": {
     "target": "ES2022",
@@ -495,7 +551,8 @@ function generateBiomeJson(): string {
       },
       "complexity": {
         "noForEach": "off",
-        "useSimplifiedLogicExpression": "warn"
+        "useSimplifiedLogicExpression": "warn",
+        "useLiteralKeys": "off"
       },
       "performance": {
         "noDelete": "error"
@@ -520,6 +577,124 @@ function generateBiomeJson(): string {
     }
   }
 }
+`;
+}
+
+function generateOxlintJson(): string {
+  return `{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "rules": {
+    "typescript/await-thenable": "error",
+    "typescript/no-array-delete": "error",
+    "typescript/no-base-to-string": "error",
+    "typescript/no-confusing-void-expression": "error",
+    "typescript/no-duplicate-type-constituents": "error",
+    "typescript/no-floating-promises": "error",
+    "typescript/no-for-in-array": "error",
+    "typescript/no-implied-eval": "error",
+    "typescript/no-meaningless-void-operator": "error",
+    "typescript/no-misused-promises": "error",
+    "typescript/no-misused-spread": "error",
+    "typescript/no-mixed-enums": "error",
+    "typescript/no-redundant-type-constituents": "error",
+    "typescript/no-unnecessary-boolean-literal-compare": "error",
+    "typescript/no-unnecessary-template-expression": "error",
+    "typescript/no-unnecessary-type-arguments": "error",
+    "typescript/no-unnecessary-type-assertion": "error",
+    "typescript/no-unsafe-argument": "error",
+    "typescript/no-unsafe-assignment": "error",
+    "typescript/no-unsafe-call": "error",
+    "typescript/no-unsafe-enum-comparison": "error",
+    "typescript/no-unsafe-member-access": "error",
+    "typescript/no-unsafe-return": "error",
+    "typescript/no-unsafe-type-assertion": "error",
+    "typescript/no-unsafe-unary-minus": "error",
+    "typescript/only-throw-error": "error",
+    "typescript/prefer-promise-reject-errors": "error",
+    "typescript/prefer-reduce-type-parameter": "error",
+    "typescript/prefer-return-this-type": "error",
+    "typescript/promise-function-async": "error",
+    "typescript/require-array-sort-compare": "error",
+    "typescript/require-await": "error",
+    "typescript/restrict-plus-operands": "error",
+    "typescript/restrict-template-expressions": "error",
+    "typescript/return-await": "error",
+    "typescript/switch-exhaustiveness-check": "error",
+    "typescript/use-unknown-in-catch-callback-variable": "error"
+  },
+  "ignorePatterns": ["node_modules", "dist", "coverage"]
+}
+`;
+}
+
+function generateDependabotYml(): string {
+  return `version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 10
+    groups:
+      dev-dependencies:
+        patterns:
+          - "@biomejs/*"
+          - "@types/*"
+          - "@commitlint/*"
+          - "bun-types"
+          - "knip"
+          - "lefthook"
+          - "oxlint"
+          - "typedoc"
+          - "typescript"
+        update-types:
+          - "minor"
+          - "patch"
+      production-dependencies:
+        patterns:
+          - "zod"
+          - "neverthrow"
+        update-types:
+          - "minor"
+          - "patch"
+    commit-message:
+      prefix: "deps"
+      include: "scope"
+    labels:
+      - "dependencies"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+    labels:
+      - "ci"
+      - "dependencies"
+
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "docker"
+      include: "scope"
+    labels:
+      - "docker"
+      - "dependencies"
 `;
 }
 
@@ -632,7 +807,7 @@ ${context.projectName}-*
 `;
 }
 
-function generateMakefile(context: TemplateContext): string {
+function generateMakefile(context: TemplateContext, _config: ProjectConfig): string {
   return `VERSION := $(shell node -p "require('./package.json').version")
 BUILD_DATE := $(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
 VCS_REF := $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
@@ -780,7 +955,7 @@ version:
 `;
 }
 
-function generateReadme(context: TemplateContext): string {
+function generateReadme(context: TemplateContext, _config: ProjectConfig): string {
   return `# ${context.projectName}
 
 ${context.description}
@@ -1230,7 +1405,7 @@ allow-rules:
 `;
 }
 
-function generateAgentsMd(_context: TemplateContext): string {
+function generateAgentsMd(_context: TemplateContext, _config: ProjectConfig): string {
   return `# AI Agent Instructions
 
 All commands use Makefile targets for consistency.
@@ -1283,7 +1458,8 @@ export function generateProject(config: ProjectConfig, outputDir: string): void 
   if (config.includeDocs) {
     writeFile(path.join(outputDir, 'typedoc.json'), generateTypedocJson(context));
   }
-  writeFile(path.join(outputDir, 'tsconfig.json'), generateTsConfig());
+  writeFile(path.join(outputDir, 'tsconfig.json'), generateTsConfig(config));
+  writeFile(path.join(outputDir, 'oxlint.json'), generateOxlintJson());
   writeFile(path.join(outputDir, 'biome.json'), generateBiomeJson());
   writeFile(path.join(outputDir, 'lefthook.yml'), generateLefthookYml());
   writeFile(path.join(outputDir, '.editorconfig'), generateEditorConfig());
@@ -1314,6 +1490,10 @@ export function generateProject(config: ProjectConfig, outputDir: string): void 
       path.join(outputDir, '.github', 'workflows', 'release.yml'),
       generateReleaseYml(context)
     );
+  }
+
+  if (config.includeDependabot) {
+    writeFile(path.join(outputDir, '.github', 'dependabot.yml'), generateDependabotYml());
   }
 
   if (config.includeDocker) {

@@ -125,15 +125,67 @@ make lint-fix    # Auto-fix issues
 make format      # Format all files
 ```
 
-### Oxlint
+### Oxlint (with Type-Aware Rules)
 
-**What**: Supplementary linter.
+**What**: Supplementary linter with TypeScript type-aware rules.
 
-**Why**: Catches issues Biome misses. Written in Rust, extremely fast. Runs in parallel with Biome.
+**Why**: Catches issues Biome misses, including critical async/promise bugs. Written in Rust, extremely fast. Type-aware rules catch:
+- Floating promises (async calls without `await`)
+- Misused promises in conditionals
+- Unsafe type assertions
+- Switch exhaustiveness violations
 
 ```bash
-make oxlint      # Run oxlint
+make oxlint      # Run oxlint with type-aware rules
 ```
+
+### Zod
+
+**What**: TypeScript-first schema validation library.
+
+**Why**: Runtime type validation that infers TypeScript types. Single source of truth for CLI options - no more manual parsing with type mismatches.
+
+```typescript
+const CliOptions = z.object({
+  output: z.string().optional(),
+  verbose: z.boolean().default(false),
+});
+type CliOptions = z.infer<typeof CliOptions>; // Types auto-generated
+```
+
+### neverthrow
+
+**What**: Type-safe error handling without exceptions.
+
+**Why**: Makes error paths explicit in type signatures. Errors become compile-time checked, not runtime surprises. Forces handling of all error cases.
+
+```typescript
+import { ok, err, Result } from 'neverthrow';
+
+function parseConfig(input: string): Result<Config, ParseError> {
+  if (!input) return err(new ParseError('Empty input'));
+  return ok(JSON.parse(input));
+}
+```
+
+### publint + attw
+
+**What**: Package validation tools.
+
+**Why**: Catches export map issues and TypeScript declaration problems before users find them.
+
+- **publint**: Validates package.json exports are correct
+- **attw** (Are The Types Wrong?): Validates TypeScript declarations are resolvable
+
+```bash
+make check-exports   # Run both validators
+```
+
+### @tsconfig/strictest
+
+**What**: Community-maintained strictest TypeScript configuration base.
+
+**Why**: Extends your tsconfig with maximum type safety settings. Gets you future strict flags automatically as TypeScript evolves.
 
 ### Lefthook
 
@@ -145,11 +197,15 @@ Configured hooks:
 - **pre-commit**: Runs Biome + Oxlint on staged files
 - **pre-push**: Runs typecheck + tests
 
-### TypeScript
+### TypeScript (Strict Configuration)
 
-**What**: Type checking for JavaScript.
+**What**: Type checking for JavaScript with maximum strictness.
 
-**Why**: Catches type errors at compile time. Bun handles execution, TypeScript handles type checking.
+**Why**: Catches type errors at compile time. Configured with Bun-recommended strict settings:
+- `noUncheckedIndexedAccess` - Forces handling `undefined` when accessing arrays/objects by index
+- `noImplicitOverride` - Requires `override` keyword for method overrides
+- `exactOptionalPropertyTypes` - Distinguishes between `undefined` and missing properties
+- `verbatimModuleSyntax` - Enforces proper import/export type syntax
 
 ```bash
 make typecheck   # Check types without emitting
@@ -194,13 +250,24 @@ make docker-shell   # Interactive shell
 
 ### GitHub Actions
 
-**What**: CI/CD pipelines.
+**What**: CI/CD pipelines with caching and concurrency.
 
-**Why**: Automated testing on every push, automatic binary releases on tags.
+**Why**: Automated testing on every push, automatic binary releases on tags. Includes Bun dependency caching for faster CI runs and concurrency groups to cancel redundant workflow runs.
 
 Included workflows:
 - **ci.yml**: Typecheck, lint, test, security scan on every push/PR
 - **release.yml**: Build binaries for macOS, Linux, Windows on tag push
+
+### Dependabot
+
+**What**: Automated dependency updates.
+
+**Why**: Keeps dependencies secure and up-to-date without manual intervention. Creates PRs for:
+- npm package updates (grouped by dev/prod)
+- GitHub Actions updates
+- Docker base image updates
+
+Configuration: `.github/dependabot.yml`
 
 ## Development
 

@@ -1,8 +1,8 @@
 const isColorSupported =
-  process.env.FORCE_COLOR !== '0' &&
-  (process.env.FORCE_COLOR === '1' ||
-    process.env.COLORTERM !== undefined ||
-    (process.stdout.isTTY && process.env.TERM !== 'dumb'));
+  process.env['FORCE_COLOR'] !== '0' &&
+  (process.env['FORCE_COLOR'] === '1' ||
+    process.env['COLORTERM'] !== undefined ||
+    (process.stdout.isTTY && process.env['TERM'] !== 'dumb'));
 
 function colorize(code: number, text: string): string {
   if (!isColorSupported) return text;

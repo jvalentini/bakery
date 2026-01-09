@@ -1,15 +1,32 @@
 #!/usr/bin/env bun
 
+import { z } from 'zod';
 import { bold, cyan, dim, error, green } from './utils/colors.js';
-import { ArgumentError } from './utils/errors.js';
 import { runWizard } from './wizard/index.js';
 
 const VERSION = '0.1.0';
 
-interface CliOptions {
-  output?: string;
-  version?: boolean;
-  help?: boolean;
+/**
+ * CLI options schema with runtime validation
+ */
+const CliOptionsSchema = z.object({
+  output: z
+    .string()
+    .min(1, 'Output directory cannot be empty')
+    .optional()
+    .describe('Output directory for the generated project'),
+  version: z.boolean().default(false).describe('Show version number'),
+  help: z.boolean().default(false).describe('Show help message'),
+});
+
+type CliOptions = z.infer<typeof CliOptionsSchema>;
+
+/**
+ * Parsed CLI result containing options and positional arguments
+ */
+interface ParsedCli {
+  options: CliOptions;
+  positional: string[];
 }
 
 function printHelp(): void {
@@ -47,40 +64,75 @@ ${bold('WHAT YOU GET:')}
 `);
 }
 
-function parseArgs(args: string[]): { options: CliOptions; positional: string[] } {
-  const options: CliOptions = {};
+/**
+ * Parse raw CLI arguments into validated options and positional args
+ */
+function parseArgs(args: readonly string[]): ParsedCli {
+  const rawOptions: Record<string, unknown> = {};
   const positional: string[] = [];
   let i = 0;
 
   while (i < args.length) {
     const arg = args[i];
 
+    if (arg === undefined) {
+      i++;
+      continue;
+    }
+
     switch (arg) {
       case '-o':
-      case '--output':
-        options.output = args[++i];
-        if (!options.output) {
-          throw new ArgumentError('--output requires a directory path');
+      case '--output': {
+        const nextArg = args[i + 1];
+        if (nextArg === undefined || nextArg.startsWith('-')) {
+          throw new CliParseError('--output requires a directory path');
         }
+        rawOptions['output'] = nextArg;
+        i += 2;
         break;
+      }
       case '-v':
       case '--version':
-        options.version = true;
+        rawOptions['version'] = true;
+        i++;
         break;
       case '-h':
       case '--help':
-        options.help = true;
+        rawOptions['help'] = true;
+        i++;
         break;
       default:
         if (arg.startsWith('-')) {
-          throw new ArgumentError(`Unknown option: ${arg}`);
+          throw new CliParseError(`Unknown option: ${arg}`);
         }
         positional.push(arg);
+        i++;
     }
-    i++;
   }
 
-  return { options, positional };
+  // Validate options against schema
+  const parseResult = CliOptionsSchema.safeParse(rawOptions);
+
+  if (!parseResult.success) {
+    const issues = parseResult.error.issues;
+    const firstIssue = issues[0];
+    const message = firstIssue
+      ? `${firstIssue.path.join('.')}: ${firstIssue.message}`
+      : 'Invalid CLI options';
+    throw new CliParseError(message);
+  }
+
+  return { options: parseResult.data, positional };
+}
+
+/**
+ * Custom error class for CLI parsing failures
+ */
+class CliParseError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'CliParseError';
+  }
 }
 
 async function main(): Promise<void> {
@@ -98,11 +150,11 @@ async function main(): Promise<void> {
       process.exit(0);
     }
 
-    const outputPath = options.output || positional[0];
+    const outputPath = options.output ?? positional[0];
 
     await runWizard(outputPath);
   } catch (err) {
-    if (err instanceof ArgumentError) {
+    if (err instanceof CliParseError) {
       console.error(error(err.message));
       console.error('Run "cli-template --help" for usage information');
       process.exit(1);
@@ -113,4 +165,7 @@ async function main(): Promise<void> {
   }
 }
 
-main();
+main().catch((err: unknown) => {
+  console.error(error(err instanceof Error ? err.message : String(err)));
+  process.exit(1);
+});

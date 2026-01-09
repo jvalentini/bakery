@@ -1,17 +1,27 @@
 {
+  "extends": "@tsconfig/strictest/tsconfig.json",
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",
     "lib": ["ES2022"],
     "moduleResolution": "bundler",
-    "strict": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
+    "jsx": "react-jsx",
+    "allowJs": true,
+
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "exactOptionalPropertyTypes": true,
+    "verbatimModuleSyntax": true,
+
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
+    "moduleDetection": "force",
+    "isolatedModules": true,
+
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
