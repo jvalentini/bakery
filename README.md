@@ -8,18 +8,6 @@ Starting a new project means hours of setup: configuring TypeScript, choosing a 
 
 Run one command, answer a few questions, and get a production-ready project with modern tooling.
 
-## Archetypes
-
-Bakery offers multiple project archetypes (recipes):
-
-| Archetype | Description |
-|-----------|-------------|
-| **CLI Tool** | Command-line applications |
-| **REST API** | Backend with Hono/Express/Elysia |
-| **Full-Stack** | Monorepo with API + Web |
-| **Effect CLI/API** | Effect-ts patterns for backend/CLI |
-| **Effect Full-Stack** | Effect + Convex + TanStack Start |
-
 ## Quick Start
 
 ```bash
@@ -30,66 +18,103 @@ bakery
 bakery -o ./my-project
 ```
 
-### Interactive Wizard
+## Archetypes
 
-```
-🥐 Bakery
+Bakery offers multiple project archetypes (recipes):
 
-📦 Project Type
+| Archetype | Description | Best For |
+|-----------|-------------|----------|
+| **CLI Tool** | Command-line applications | DevOps tools, utilities, automation |
+| **REST API** | Backend with Hono/Express/Elysia | Web services, microservices |
+| **Full-Stack** | Monorepo with API + Web | SaaS apps, dashboards |
+| **Effect CLI/API** | Effect-ts patterns for backend/CLI | Type-safe, functional backend |
+| **Effect Full-Stack** | Effect + Convex + TanStack Start | Real-time collaborative apps |
 
-  → 1. CLI Tool - Command-line applications
-    2. REST API - Backend with Hono/Express/Elysia
-    3. Full-Stack - Monorepo with API + Web
-    4. Effect CLI/API - Effect-ts patterns
-    5. Effect Full-Stack - Effect + Convex + TanStack
+### CLI Tool
 
-📦 Project Details
+Perfect for command-line utilities, DevOps tools, and automation scripts.
 
-Project name (e.g., my-awesome-app): my-tool
-Description: A tool that does useful things
-Author name: Your Name
-
-🛠️  Features
-
-Include Docker support? [Y/n]: y
-Include GitHub Actions CI? [Y/n]: y
-
-✓ Project created successfully!
+```bash
+bakery -o my-cli
+# Select: CLI Tool
+# Your CLI with binary compilation, version management, and help generation
 ```
 
-## What You Get
+**Includes**: Bun for native binary compilation, commander.js for CLI framework, automatic version flags.
 
-Every project includes:
+### REST API
 
-- **TypeScript + Bun** for fast development and execution
-- **Biome + Oxlint** for comprehensive linting and formatting
-- **Lefthook** for git hooks that catch issues before commit
-- **Makefile** for consistent commands across humans and AI agents
+Backend services with your choice of framework.
 
-Optional addons:
-- **Docker** for containerized development
-- **GitHub Actions** for CI/CD and binary releases
-- **Convex** for real-time database
-- **TanStack Query/Router/Form** for web apps
-- **TypeDoc** for API documentation
-- **Trivy** for security scanning
+```bash
+bakery -o my-api
+# Select: REST API
+# Choose: Hono, Express, or Elysia
+```
 
-## Framework Choices
+**Framework Options**:
+- **Hono** - Lightweight, fast, great with Bun. Best for edge deployments.
+- **Express** - Battle-tested, huge ecosystem. Best for complex enterprise apps.
+- **Elysia** - Bun-native, TypeScript-first. Best for end-to-end type safety.
 
-### Web Frameworks
-- React (Vite)
-- Next.js
-- Vue
-- TanStack Start
+### Full-Stack
 
-### API Frameworks
-- Hono (lightweight, fast, great with Bun)
-- Express (battle-tested, huge ecosystem)
-- Elysia (Bun-native, TypeScript-first)
+Monorepo with API backend and web frontend in coordinated packages.
 
-## Commands
+```bash
+bakery -o my-app
+# Select: Full-Stack
+# Choose API: Hono/Express/Elysia
+# Choose Web: React/Next.js/Vue/TanStack Start
+```
 
-Every generated project uses the same Makefile interface:
+**Web Framework Options**:
+- **React (Vite)** - Fast development, flexible architecture
+- **Next.js** - SSR, API routes, great DX
+- **Vue** - Progressive, gentle learning curve
+- **TanStack Start** - Full-stack type safety, file-based routing
+
+### Effect Archetypes
+
+For projects using Effect-ts for robust, type-safe functional programming.
+
+```bash
+bakery -o my-effect-app
+# Select: Effect CLI/API or Effect Full-Stack
+```
+
+**Effect Full-Stack** combines:
+- Effect for type-safe business logic
+- Convex for real-time database
+- TanStack Start for the frontend
+
+## Addons
+
+Enhance any archetype with optional features:
+
+| Addon | Description |
+|-------|-------------|
+| **Docker** | Dockerfile + docker-compose for containerized development |
+| **GitHub Actions** | CI/CD pipelines, automated testing, binary releases |
+| **Convex** | Real-time database with automatic sync |
+| **TanStack Query** | Powerful data fetching and caching |
+| **TanStack Router** | Type-safe routing for React |
+| **TanStack Form** | Performant, type-safe forms |
+| **TypeDoc** | API documentation generation |
+| **Trivy** | Container security scanning |
+
+## What Every Project Gets
+
+All generated projects include:
+
+- **TypeScript + Bun** - Fast development and execution
+- **Biome + Oxlint** - Comprehensive linting and formatting
+- **Lefthook** - Git hooks that catch issues before commit
+- **Makefile** - Consistent commands for humans and AI agents
+
+### Standard Commands
+
+Every project uses the same Makefile interface:
 
 ```bash
 make install      # Install dependencies
@@ -100,38 +125,68 @@ make build        # Build to dist/
 make build-binary # Build native binary (CLI projects)
 ```
 
-## Tooling
+## Plugins
 
-### Bun
+Bakery supports plugins for extending functionality with custom archetypes, addons, and templates.
 
-**What**: JavaScript/TypeScript runtime and package manager.
+### Installing Plugins
 
-**Why**: 4x faster than Node.js, built-in TypeScript support, fast package installs, native binary compilation.
+Plugins are loaded automatically from:
 
-### Biome
+1. **Local project** - `./bakery-plugins/plugin-name/`
+2. **User directory** - `~/.bakery/plugins/plugin-name/`
+3. **npm packages** - `bakery-plugin-*` in node_modules
 
-**What**: Linter and formatter in one tool.
+### Using Plugins
 
-**Why**: Replaces ESLint + Prettier with a single, faster tool. Written in Rust, 25x faster than ESLint.
+```bash
+# List installed plugins
+bakery plugins
 
-### Oxlint (with Type-Aware Rules)
+# Plugins automatically add their archetypes/addons to the wizard
+bakery
+```
 
-**What**: Supplementary linter with TypeScript type-aware rules.
+### Creating Plugins
 
-**Why**: Catches issues Biome misses, including critical async/promise bugs. Written in Rust, extremely fast.
+See [docs/plugins.md](docs/plugins.md) for the complete plugin authoring guide.
 
-### Lefthook
+A minimal plugin structure:
 
-**What**: Git hooks manager.
+```
+my-plugin/
+├── plugin.json       # Plugin manifest
+├── templates/
+│   └── my-addon/
+│       ├── template.json
+│       └── files/
+└── index.ts          # Optional: hooks and prompts
+```
 
-**Why**: Runs checks automatically on commit/push. Faster than Husky, written in Go.
+## Tooling Choices
+
+### Why Bun?
+
+4x faster than Node.js, built-in TypeScript support, fast package installs, native binary compilation.
+
+### Why Biome?
+
+Replaces ESLint + Prettier with a single, faster tool. Written in Rust, 25x faster than ESLint.
+
+### Why Oxlint?
+
+Supplementary linter with TypeScript type-aware rules. Catches async/promise bugs that Biome misses. Written in Rust, extremely fast.
+
+### Why Lefthook?
+
+Git hooks manager that runs checks automatically on commit/push. Faster than Husky, written in Go.
 
 ## Development
 
 ```bash
 # Clone this repo
-git clone https://github.com/username/bakery.git
-cd bakery
+git clone https://github.com/jvalentini/cli-template.git
+cd cli-template
 
 # Install dependencies
 make install
@@ -145,6 +200,10 @@ make test
 # Test the wizard
 bun run src/cli.ts --help
 ```
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on contributing to Bakery.
 
 ## License
 
