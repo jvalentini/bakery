@@ -91,6 +91,10 @@ jobs:
   security:
     name: Security Scan
     runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
 
     steps:
       - name: Checkout code
@@ -186,7 +190,7 @@ jobs:
           target: test
           push: false
           load: true
-          tags: cli-template:test
+          tags: bakery:test
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -203,14 +207,14 @@ jobs:
           target: production
           push: false
           load: true
-          tags: cli-template:latest
+          tags: bakery:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Scan Docker image with Trivy
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'cli-template:latest'
+          image-ref: 'bakery:latest'
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true
