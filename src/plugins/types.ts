@@ -297,7 +297,7 @@ export interface PluginHooks {
    */
   beforeGenerate?(
     context: PluginContext
-  ): Promise<BeforeGenerateResult | void> | BeforeGenerateResult | void;
+  ): Promise<BeforeGenerateResult | undefined> | BeforeGenerateResult | undefined;
 
   /**
    * Called after generation completes successfully
@@ -319,7 +319,7 @@ export interface PluginHooks {
    */
   afterGenerate?(
     context: PluginContext
-  ): Promise<AfterGenerateResult | void> | AfterGenerateResult | void;
+  ): Promise<AfterGenerateResult | undefined> | AfterGenerateResult | undefined;
 
   /**
    * Called if an error occurs during generation
@@ -455,7 +455,7 @@ export interface BakeryPlugin {
    * @param pluginDir - Directory where the plugin is located
    * @returns Plugin manifest or void if using inline definition
    */
-  init?(pluginDir: string): Promise<PluginManifest | void> | PluginManifest | void;
+  init?(pluginDir: string): Promise<PluginManifest | undefined> | PluginManifest | undefined;
 
   /**
    * Cleanup when plugin is unloaded

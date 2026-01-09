@@ -7,7 +7,6 @@ import * as os from 'node:os';
 import * as path from 'node:path';
 import {
   createPluginRegistry,
-  discoverPlugins,
   discoverPluginsInDir,
   getLocalPluginsDir,
   getPluginSearchPaths,

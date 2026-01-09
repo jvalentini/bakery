@@ -8,7 +8,6 @@ import {
   type BeforeGenerateResult,
   isBakeryPlugin,
   isPluginManifest,
-  type PluginContext,
   type PluginHooks,
   type PluginManifest,
 } from '../src/plugins/index.js';
@@ -130,15 +129,15 @@ describe('Plugin Types', () => {
 
     it('should allow plugin with hooks', () => {
       const hooks: PluginHooks = {
-        beforeGenerate: async (ctx) => {
+        beforeGenerate: async (_ctx) => {
           return { skipGeneration: false };
         },
-        afterGenerate: async (ctx) => {
+        afterGenerate: async (_ctx) => {
           return {
             additionalFiles: new Map([['extra.txt', 'content']]),
           };
         },
-        onError: async (error, ctx) => {
+        onError: async (_error, _ctx) => {
           // Handle error
         },
       };
