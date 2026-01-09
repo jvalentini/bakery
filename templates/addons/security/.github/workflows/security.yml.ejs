@@ -12,6 +12,7 @@ on:
 permissions:
   contents: read
   security-events: write
+  actions: read
 
 jobs:
   trivy:
@@ -32,7 +33,7 @@ jobs:
           vuln-type: 'os,library'
 
       - name: Upload Trivy scan results to GitHub Security
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         if: always()
         with:
           sarif_file: 'trivy-fs-results.sarif'
@@ -76,7 +77,7 @@ jobs:
           scanners: 'secret'
 
       - name: Upload secret scan results
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         if: always()
         with:
           sarif_file: 'trivy-secret-results.sarif'
