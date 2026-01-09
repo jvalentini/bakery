@@ -31,6 +31,26 @@
  * @module
  */
 
+// Plugin loader
+export {
+  createPluginRegistry,
+  discoverNpmPlugins,
+  discoverPlugins,
+  discoverPluginsInDir,
+  findNpmPlugin,
+  getLocalPluginsDir,
+  getPluginSearchPaths,
+  // Discovery functions
+  getUserPluginsDir,
+  loadNpmPlugin,
+  loadPlugin,
+  // Loading functions
+  loadPluginManifest,
+  // Schema
+  PluginManifestSchema,
+  // Registry
+  pluginRegistry,
+} from './loader.js';
 // Core plugin types
 // Context types
 // Hook types
@@ -49,6 +69,5 @@ export type {
   PluginTemplateUtils,
   ProjectConfig,
 } from './types.js';
-
 // Type guards
 export { isBakeryPlugin, isPluginManifest } from './types.js';
