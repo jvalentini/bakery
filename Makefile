@@ -73,6 +73,9 @@ help:
 	@echo "CLEANUP:"
 	@echo "  make clean              - Remove caches, build artifacts, stop containers"
 	@echo ""
+	@echo "AGENT SKILLS:"
+	@echo "  make install-skills     - Install CLI Template skills for AI coding agents"
+	@echo ""
 	@echo "UTILITIES:"
 	@echo "  make version            - Show version information"
 	@echo "  make status             - Show git status"
@@ -375,3 +378,82 @@ version:
 .PHONY: status
 status:
 	@git status --short || echo "Not a git repository"
+
+# ============================================
+# Agent Skills
+# ============================================
+.PHONY: install-skills
+install-skills:
+	@echo ""
+	@echo "Agent Skills Installer"
+	@echo "======================"
+	@echo ""
+	@echo "This will install CLI Template skills for your AI coding agents."
+	@echo ""
+	@# Detect available agents
+	@CLAUDE_AVAILABLE=0; \
+	OPENCODE_AVAILABLE=0; \
+	CURSOR_AVAILABLE=0; \
+	if [ -d "$$HOME/.claude" ] || command -v claude >/dev/null 2>&1; then \
+		CLAUDE_AVAILABLE=1; \
+		echo "  [x] Claude Code detected"; \
+	else \
+		echo "  [ ] Claude Code not detected"; \
+	fi; \
+	if [ -d "$$HOME/.config/opencode" ] || command -v opencode >/dev/null 2>&1; then \
+		OPENCODE_AVAILABLE=1; \
+		echo "  [x] OpenCode detected"; \
+	else \
+		echo "  [ ] OpenCode not detected"; \
+	fi; \
+	if [ -d "$$HOME/.cursor" ] || command -v cursor >/dev/null 2>&1; then \
+		CURSOR_AVAILABLE=1; \
+		echo "  [x] Cursor detected"; \
+	else \
+		echo "  [ ] Cursor not detected"; \
+	fi; \
+	echo ""; \
+	echo "Select agents to install skills for:"; \
+	echo "  1) Claude Code  (~/.claude/skills/cli-template/)"; \
+	echo "  2) OpenCode     (~/.config/opencode/skill/)"; \
+	echo "  3) Cursor       (~/.cursor/rules/)"; \
+	echo "  4) All detected"; \
+	echo "  5) All (force)"; \
+	echo "  q) Quit"; \
+	echo ""; \
+	printf "Choice [4]: "; \
+	read CHOICE; \
+	CHOICE=$${CHOICE:-4}; \
+	INSTALL_CLAUDE=0; \
+	INSTALL_OPENCODE=0; \
+	INSTALL_CURSOR=0; \
+	case "$$CHOICE" in \
+		1) INSTALL_CLAUDE=1 ;; \
+		2) INSTALL_OPENCODE=1 ;; \
+		3) INSTALL_CURSOR=1 ;; \
+		4) INSTALL_CLAUDE=$$CLAUDE_AVAILABLE; INSTALL_OPENCODE=$$OPENCODE_AVAILABLE; INSTALL_CURSOR=$$CURSOR_AVAILABLE ;; \
+		5) INSTALL_CLAUDE=1; INSTALL_OPENCODE=1; INSTALL_CURSOR=1 ;; \
+		q|Q) echo "Cancelled."; exit 0 ;; \
+		*) echo "Invalid choice."; exit 1 ;; \
+	esac; \
+	echo ""; \
+	if [ "$$INSTALL_CLAUDE" = "1" ]; then \
+		echo "Installing Claude Code skill..."; \
+		mkdir -p "$$HOME/.claude/skills/cli-template"; \
+		cp docs/agent-skills/claude-code/skill.md "$$HOME/.claude/skills/cli-template/skill.md"; \
+		echo "  -> $$HOME/.claude/skills/cli-template/skill.md"; \
+	fi; \
+	if [ "$$INSTALL_OPENCODE" = "1" ]; then \
+		echo "Installing OpenCode skill..."; \
+		mkdir -p "$$HOME/.config/opencode/skill"; \
+		cp docs/agent-skills/opencode/cli-template.md "$$HOME/.config/opencode/skill/cli-template.md"; \
+		echo "  -> $$HOME/.config/opencode/skill/cli-template.md"; \
+	fi; \
+	if [ "$$INSTALL_CURSOR" = "1" ]; then \
+		echo "Installing Cursor skill..."; \
+		mkdir -p "$$HOME/.cursor/rules"; \
+		cp docs/agent-skills/cursor/cli-template.md "$$HOME/.cursor/rules/cli-template.md"; \
+		echo "  -> $$HOME/.cursor/rules/cli-template.md"; \
+	fi; \
+	echo ""; \
+	echo "Done!"
