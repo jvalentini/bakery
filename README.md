@@ -8,6 +8,35 @@ Starting a new project means hours of setup: configuring TypeScript, choosing a 
 
 Run one command, answer a few questions, and get a production-ready project with modern tooling.
 
+## Installation
+
+### One-liner (recommended)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/jvalentini/cli-template/main/install.sh | bash
+```
+
+This downloads and runs the interactive wizard directly. No permanent installation required.
+
+### Install globally
+
+```bash
+# With bun
+bun install -g bakery
+
+# With npm
+npm install -g bakery
+```
+
+### From source
+
+```bash
+git clone https://github.com/jvalentini/cli-template.git
+cd cli-template
+make install
+bun run src/cli.ts
+```
+
 ## Quick Start
 
 ```bash

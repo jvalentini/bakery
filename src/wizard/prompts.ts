@@ -72,17 +72,244 @@ export interface LegacyProjectConfig {
   includeStrictestConfig: boolean;
 }
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stderr,
-});
+let rl: readline.Interface | null = null;
+
+function getReadline(): readline.Interface {
+  if (!rl) {
+    rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stderr,
+    });
+  }
+  return rl;
+}
+
+function resetReadline(): void {
+  if (rl) {
+    rl.close();
+    rl = null;
+  }
+}
 
 function question(prompt: string): Promise<string> {
   return new Promise((resolve) => {
-    rl.question(prompt, (answer) => {
+    const reader = getReadline();
+    reader.question(prompt, (answer) => {
       resolve(answer.trim());
     });
   });
+}
+
+// ANSI escape codes for terminal control
+const ANSI = {
+  hideCursor: '\x1b[?25l',
+  showCursor: '\x1b[?25h',
+  clearLine: '\x1b[2K',
+  moveUp: (n: number) => `\x1b[${n}A`,
+  moveToStart: '\r',
+};
+
+// Key codes
+const KEYS = {
+  up: '\x1b[A',
+  down: '\x1b[B',
+  enter: '\r',
+  enterLF: '\n',
+  space: ' ',
+  ctrlC: '\x03',
+  escape: '\x1b',
+};
+
+/**
+ * Read a single keypress in raw mode
+ */
+function readKey(): Promise<string> {
+  return new Promise((resolve) => {
+    const stdin = process.stdin;
+    const wasRaw = stdin.isRaw;
+
+    stdin.setRawMode(true);
+    stdin.resume();
+    stdin.once('data', (data) => {
+      stdin.setRawMode(wasRaw ?? false);
+      // Don't pause - readline needs stdin to keep flowing
+      resolve(data.toString());
+    });
+  });
+}
+
+/**
+ * Render a selection list with the current cursor position
+ */
+function renderSelectList(
+  options: { label: string }[],
+  cursor: number,
+  selected?: Set<number>
+): void {
+  const output = process.stderr;
+
+  for (let i = 0; i < options.length; i++) {
+    const opt = options[i];
+    if (!opt) continue;
+
+    const isCursor = i === cursor;
+    const isSelected = selected?.has(i);
+
+    let marker: string;
+    if (selected !== undefined) {
+      // Multi-select mode
+      marker = isSelected ? green('◉') : dim('○');
+    } else {
+      // Single-select mode
+      marker = isCursor ? green('❯') : ' ';
+    }
+
+    const label = isCursor ? bold(opt.label) : opt.label;
+    const prefix = isCursor ? cyan('›') : ' ';
+
+    output.write(`${ANSI.clearLine}  ${prefix} ${marker} ${label}\n`);
+  }
+}
+
+/**
+ * Clear the rendered list and move cursor back up
+ */
+function clearList(lineCount: number): void {
+  const output = process.stderr;
+  output.write(ANSI.moveUp(lineCount));
+  for (let i = 0; i < lineCount; i++) {
+    output.write(`${ANSI.clearLine}\n`);
+  }
+  output.write(ANSI.moveUp(lineCount));
+}
+
+/**
+ * Interactive single-select with arrow keys
+ */
+async function interactiveSelect<T extends string>(
+  prompt: string,
+  options: { value: T; label: string }[],
+  defaultIndex = 0
+): Promise<T> {
+  const output = process.stderr;
+  let cursor = defaultIndex;
+
+  output.write(`\n${prompt}\n`);
+  output.write(dim('  (Use arrow keys to navigate, Enter to select)\n\n'));
+  output.write(ANSI.hideCursor);
+
+  renderSelectList(options, cursor);
+
+  try {
+    while (true) {
+      const key = await readKey();
+
+      if (key === KEYS.ctrlC) {
+        output.write(ANSI.showCursor);
+        process.exit(0);
+      }
+
+      if (key === KEYS.enter || key === KEYS.enterLF) {
+        output.write(ANSI.showCursor);
+        const selected = options[cursor];
+        if (selected) {
+          // Show what was selected
+          clearList(options.length);
+          output.write(`${ANSI.clearLine}  ${green('✓')} ${selected.label}\n`);
+          // Reset readline so it's fresh for text input
+          resetReadline();
+          return selected.value;
+        }
+      }
+
+      if (key === KEYS.up) {
+        cursor = cursor > 0 ? cursor - 1 : options.length - 1;
+      } else if (key === KEYS.down) {
+        cursor = cursor < options.length - 1 ? cursor + 1 : 0;
+      }
+
+      // Redraw the list
+      clearList(options.length);
+      renderSelectList(options, cursor);
+    }
+  } catch {
+    output.write(ANSI.showCursor);
+    resetReadline();
+    throw new Error('Selection cancelled');
+  }
+}
+
+/**
+ * Interactive multi-select with arrow keys and space to toggle
+ */
+async function interactiveMultiSelect<T extends string>(
+  prompt: string,
+  options: { value: T; label: string; default?: boolean }[]
+): Promise<T[]> {
+  const output = process.stderr;
+  let cursor = 0;
+  const selected = new Set<number>();
+
+  // Initialize with defaults
+  options.forEach((opt, i) => {
+    if (opt.default) selected.add(i);
+  });
+
+  output.write(`\n${prompt}\n`);
+  output.write(dim('  (Use arrow keys, Space to toggle, Enter to confirm)\n\n'));
+  output.write(ANSI.hideCursor);
+
+  renderSelectList(options, cursor, selected);
+
+  try {
+    while (true) {
+      const key = await readKey();
+
+      if (key === KEYS.ctrlC) {
+        output.write(ANSI.showCursor);
+        process.exit(0);
+      }
+
+      if (key === KEYS.enter || key === KEYS.enterLF) {
+        output.write(ANSI.showCursor);
+        // Show what was selected
+        clearList(options.length);
+        const selectedOptions = options.filter((_, i) => selected.has(i));
+        if (selectedOptions.length === 0) {
+          output.write(`${ANSI.clearLine}  ${dim('(none selected)')}\n`);
+        } else {
+          for (const opt of selectedOptions) {
+            output.write(`${ANSI.clearLine}  ${green('✓')} ${opt.label}\n`);
+          }
+        }
+        // Reset readline so it's fresh for text input
+        resetReadline();
+        return selectedOptions.map((o) => o.value);
+      }
+
+      if (key === KEYS.space) {
+        if (selected.has(cursor)) {
+          selected.delete(cursor);
+        } else {
+          selected.add(cursor);
+        }
+      }
+
+      if (key === KEYS.up) {
+        cursor = cursor > 0 ? cursor - 1 : options.length - 1;
+      } else if (key === KEYS.down) {
+        cursor = cursor < options.length - 1 ? cursor + 1 : 0;
+      }
+
+      // Redraw the list
+      clearList(options.length);
+      renderSelectList(options, cursor, selected);
+    }
+  } catch {
+    output.write(ANSI.showCursor);
+    resetReadline();
+    throw new Error('Selection cancelled');
+  }
 }
 
 function detectGitUser(): { name: string | undefined; email: string | undefined } {
@@ -154,25 +381,8 @@ async function promptSelect<T extends string>(
   options: { value: T; label: string }[],
   defaultIndex = 0
 ): Promise<T> {
-  console.error(`\n${prompt}`);
-  options.forEach((opt, i) => {
-    const marker = i === defaultIndex ? green('→') : ' ';
-    const label = i === defaultIndex ? bold(opt.label) : opt.label;
-    console.error(`  ${marker} ${i + 1}. ${label}`);
-  });
-
-  while (true) {
-    const answer = await question(`${dim('Enter number')} [${defaultIndex + 1}]: `);
-    const defaultOption = options[defaultIndex];
-    if (!answer && defaultOption !== undefined) return defaultOption.value;
-
-    const num = parseInt(answer, 10);
-    const selectedOption = options[num - 1];
-    if (num >= 1 && num <= options.length && selectedOption !== undefined) {
-      return selectedOption.value;
-    }
-    console.error(red(`  Please enter a number between 1 and ${options.length}`));
-  }
+  // Use interactive arrow key selection
+  return interactiveSelect(prompt, options, defaultIndex);
 }
 
 async function promptConfirm(prompt: string, defaultValue = true): Promise<boolean> {
@@ -187,37 +397,8 @@ async function promptMultiSelect<T extends string>(
   prompt: string,
   options: { value: T; label: string; default?: boolean }[]
 ): Promise<T[]> {
-  console.error(`\n${prompt}`);
-  console.error(dim('  (Enter numbers separated by commas, or press Enter for defaults)\n'));
-
-  options.forEach((opt, i) => {
-    const marker = opt.default ? green('✓') : ' ';
-    console.error(`  ${marker} ${i + 1}. ${opt.label}`);
-  });
-
-  const defaults = options.filter((o) => o.default).map((o) => o.value);
-
-  while (true) {
-    const answer = await question(
-      `${dim('Enter numbers')} [${options
-        .map((_, i) => (options[i]?.default ? i + 1 : ''))
-        .filter(Boolean)
-        .join(',')}]: `
-    );
-
-    if (!answer) return defaults;
-
-    const nums = answer.split(',').map((s) => parseInt(s.trim(), 10));
-    const valid = nums.every((n) => n >= 1 && n <= options.length);
-
-    if (valid) {
-      return nums.map((n) => options[n - 1]?.value).filter((v): v is T => v !== undefined);
-    }
-
-    console.error(
-      red(`  Please enter numbers between 1 and ${options.length}, separated by commas`)
-    );
-  }
+  // Use interactive arrow key selection with space to toggle
+  return interactiveMultiSelect(prompt, options);
 }
 
 export async function runPrompts(): Promise<ProjectConfig> {
@@ -385,7 +566,7 @@ export async function runPrompts(): Promise<ProjectConfig> {
 }
 
 export function closePrompts(): void {
-  rl.close();
+  resetReadline();
 }
 
 const archetypeLabels: Record<Archetype, string> = {
