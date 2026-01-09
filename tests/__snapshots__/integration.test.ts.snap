@@ -1,0 +1,114 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`Snapshot tests CLI archetype package.json should match snapshot 1`] = `
+{
+  "author": "Snapshot Author",
+  "bin": {
+    "snapshot-test": "./dist/cli.js",
+  },
+  "bugs": {
+    "url": "https://github.com/snapshotuser/snapshot-test/issues",
+  },
+  "dependencies": {},
+  "description": "Snapshot test project",
+  "devDependencies": {
+    "@biomejs/biome": "^X.X.X",
+    "@types/node": "^X.X.X",
+    "bun-types": "latest",
+    "lefthook": "^X.X.X",
+    "oxlint": "^X.X.X",
+    "typescript": "^X.X.X",
+  },
+  "engines": {
+    "bun": ">=1.0.0",
+  },
+  "files": [
+    "dist/",
+  ],
+  "homepage": "https://github.com/snapshotuser/snapshot-test#readme",
+  "keywords": [
+    "cli",
+    "typescript",
+    "bun",
+  ],
+  "license": "MIT",
+  "main": "./dist/cli.js",
+  "name": "snapshot-test",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/snapshotuser/snapshot-test.git",
+  },
+  "scripts": {
+    "build": "tsc",
+    "build:binaries": "bun run build:darwin-arm64 && bun run build:darwin-x64 && bun run build:linux-x64 && bun run build:linux-arm64 && bun run build:windows-x64",
+    "build:binary": "bun build src/cli.ts --compile --outfile snapshot-test",
+    "build:darwin-arm64": "mkdir -p dist && bun build src/cli.ts --compile --target=bun-darwin-arm64 --outfile dist/snapshot-test-darwin-arm64",
+    "build:darwin-x64": "mkdir -p dist && bun build src/cli.ts --compile --target=bun-darwin-x64 --outfile dist/snapshot-test-darwin-x64",
+    "build:linux-arm64": "mkdir -p dist && bun build src/cli.ts --compile --target=bun-linux-arm64 --outfile dist/snapshot-test-linux-arm64",
+    "build:linux-x64": "mkdir -p dist && bun build src/cli.ts --compile --target=bun-linux-x64 --outfile dist/snapshot-test-linux-x64",
+    "build:windows-x64": "mkdir -p dist && bun build src/cli.ts --compile --target=bun-windows-x64 --outfile dist/snapshot-test-windows-x64.exe",
+    "check": "bun run typecheck && bun run lint && bun run oxlint",
+    "check:all": "bun run check && bun run test:coverage",
+    "dev": "bun run src/cli.ts",
+    "format": "biome format --write .",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "oxlint": "oxlint .",
+    "test": "bun test",
+    "test:coverage": "bun test --coverage",
+    "test:watch": "bun test --watch",
+    "typecheck": "tsc --noEmit",
+  },
+  "type": "module",
+  "version": "0.1.0",
+}
+`;
+
+exports[`Snapshot tests CLI archetype file list should match expected file structure 1`] = `
+[
+  ".editorconfig",
+  ".gitignore",
+  "AGENTS.md",
+  "Makefile",
+  "README.md",
+  "biome.json",
+  "commitlint.config.js",
+  "knip.json",
+  "lefthook.yml",
+  "package.json",
+  "src/cli.ts",
+  "src/utils/colors.ts",
+  "src/utils/errors.ts",
+  "src/utils/logger.ts",
+  "tests/cli.test.ts",
+  "tsconfig.json",
+]
+`;
+
+exports[`Snapshot tests CLI archetype with all addons file list should match expected file structure 1`] = `
+[
+  ".dockerignore",
+  ".editorconfig",
+  ".github/workflows/ci.yml",
+  ".github/workflows/security.yml",
+  ".gitignore",
+  "AGENTS.md",
+  "Dockerfile",
+  "Makefile",
+  "README.md",
+  "biome.json",
+  "commitlint.config.js",
+  "docker-compose.yml",
+  "knip.json",
+  "lefthook.yml",
+  "package.json",
+  "src/cli.ts",
+  "src/utils/colors.ts",
+  "src/utils/errors.ts",
+  "src/utils/logger.ts",
+  "tests/cli.test.ts",
+  "trivy.yaml",
+  "tsconfig.json",
+  "typedoc.json",
+]
+`;
