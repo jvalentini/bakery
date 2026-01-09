@@ -1,0 +1,15 @@
+node_modules
+dist
+coverage
+.git
+.github
+*.log
+*.md
+!README.md
+.DS_Store
+Thumbs.db
+.idea
+.vscode
+*.swp
+*.swo
+cli-template-*

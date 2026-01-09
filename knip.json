@@ -1,0 +1,13 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": ["src/cli.ts", "src/wizard/index.ts"],
+  "project": ["src/**/*.ts"],
+  "ignore": ["**/*.test.ts", "**/*.spec.ts"],
+  "ignoreDependencies": [
+    "oxlint",
+    "bun-types",
+    "@commitlint/cli",
+    "@commitlint/config-conventional"
+  ],
+  "ignoreExportsUsedInFile": true
+}

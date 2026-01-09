@@ -1,0 +1,90 @@
+services:
+  dev:
+    build:
+      context: .
+      target: dev
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: bun run dev
+
+  test:
+    build:
+      context: .
+      target: test
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: bun test
+
+  test-watch:
+    build:
+      context: .
+      target: test
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: bun test --watch
+
+  lint:
+    build:
+      context: .
+      target: dev
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: bun run lint
+
+  lint-fix:
+    build:
+      context: .
+      target: dev
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: bun run lint:fix
+
+  format:
+    build:
+      context: .
+      target: dev
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: bun run format
+
+  typecheck:
+    build:
+      context: .
+      target: dev
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: bun run typecheck
+
+  check:
+    build:
+      context: .
+      target: dev
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: bun run check
+
+  build:
+    build:
+      context: .
+      target: build
+    volumes:
+      - ./dist:/app/dist
+
+  shell:
+    build:
+      context: .
+      target: dev
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: /bin/sh
+    stdin_open: true
+    tty: true

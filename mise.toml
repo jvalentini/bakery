@@ -1,0 +1,9 @@
+[tools]
+biome = "latest"
+bun = "latest"
+lefthook = "latest"
+node = "22"
+oxlint = "latest"
+trivy = "latest"
+typedoc = "latest"
+knip = "latest"

@@ -1,0 +1,70 @@
+{
+  "name": "cli-template",
+  "version": "0.1.0",
+  "description": "Create new CLI projects with modern TypeScript tooling",
+  "type": "module",
+  "main": "./dist/cli.js",
+  "bin": {
+    "cli-template": "./dist/cli.js"
+  },
+  "files": [
+    "dist/"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/username/cli-template.git"
+  },
+  "homepage": "https://github.com/username/cli-template#readme",
+  "bugs": {
+    "url": "https://github.com/username/cli-template/issues"
+  },
+  "scripts": {
+    "dev": "bun run src/cli.ts",
+    "build": "tsc",
+    "build:binary": "bun build src/cli.ts --compile --outfile cli-template",
+    "build:darwin-arm64": "mkdir -p dist && bun build src/cli.ts --compile --target=bun-darwin-arm64 --outfile dist/cli-template-darwin-arm64",
+    "build:darwin-x64": "mkdir -p dist && bun build src/cli.ts --compile --target=bun-darwin-x64 --outfile dist/cli-template-darwin-x64",
+    "build:linux-x64": "mkdir -p dist && bun build src/cli.ts --compile --target=bun-linux-x64 --outfile dist/cli-template-linux-x64",
+    "build:linux-arm64": "mkdir -p dist && bun build src/cli.ts --compile --target=bun-linux-arm64 --outfile dist/cli-template-linux-arm64",
+    "build:windows-x64": "mkdir -p dist && bun build src/cli.ts --compile --target=bun-windows-x64 --outfile dist/cli-template-windows-x64.exe",
+    "build:binaries": "bun run build:darwin-arm64 && bun run build:darwin-x64 && bun run build:linux-x64 && bun run build:linux-arm64 && bun run build:windows-x64",
+    "test": "bun test",
+    "test:watch": "bun test --watch",
+    "test:coverage": "bun test --coverage",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "oxlint": "oxlint .",
+    "typecheck": "tsc --noEmit",
+    "check": "bun run typecheck && bun run lint && bun run oxlint",
+    "check:all": "bun run check && bun run test:coverage",
+    "docs": "typedoc",
+    "docs:watch": "typedoc --watch"
+  },
+  "keywords": [
+    "cli",
+    "typescript",
+    "bun",
+    "template",
+    "scaffolding",
+    "generator",
+    "cookiecutter"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "bun": ">=1.0.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.3.11",
+    "@commitlint/cli": "^20.3.1",
+    "@commitlint/config-conventional": "^20.3.1",
+    "@types/node": "^20.0.0",
+    "bun-types": "latest",
+    "knip": "^5.80.1",
+    "lefthook": "^2.0.13",
+    "oxlint": "^1.38.0",
+    "typedoc": "^0.27.0",
+    "typescript": "^5.0.0"
+  }
+}

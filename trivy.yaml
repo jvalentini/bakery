@@ -1,0 +1,22 @@
+severity:
+  - CRITICAL
+  - HIGH
+  - MEDIUM
+
+vulnerability:
+  type:
+    - os
+    - library
+
+scan:
+  scanners:
+    - vuln
+    - secret
+    - misconfig
+
+secret:
+  config: trivy-secret.yaml
+
+exit:
+  code: 1
+  on-eol: 1
