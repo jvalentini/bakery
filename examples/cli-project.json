@@ -1,0 +1,9 @@
+{
+  "projectName": "my-cli-tool",
+  "description": "A CLI tool built with TypeScript and Bun",
+  "author": "Your Name",
+  "license": "MIT",
+  "githubUsername": "yourusername",
+  "archetype": "cli",
+  "addons": ["docker", "ci", "release", "docs", "security", "zod"]
+}

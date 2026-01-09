@@ -2,29 +2,29 @@
 
 import { z } from 'zod';
 import { handlePluginsCommand } from './commands/plugins.js';
+import { formatConfigError, loadConfigFile } from './config/index.js';
 import { bold, cyan, dim, error, green } from './utils/colors.js';
-import { runWizard } from './wizard/index.js';
+import { runFromConfig, runWizard } from './wizard/index.js';
 
-const VERSION = '0.1.0';
+const VERSION = '0.2.0';
 
-/**
- * CLI options schema with runtime validation
- */
 const CliOptionsSchema = z.object({
   output: z
     .string()
     .min(1, 'Output directory cannot be empty')
     .optional()
     .describe('Output directory for the generated project'),
+  config: z
+    .string()
+    .min(1, 'Config path cannot be empty')
+    .optional()
+    .describe('Path to config file for non-interactive mode'),
   version: z.boolean().default(false).describe('Show version number'),
   help: z.boolean().default(false).describe('Show help message'),
 });
 
 type CliOptions = z.infer<typeof CliOptionsSchema>;
 
-/**
- * Parsed CLI result containing options and positional arguments
- */
 interface ParsedCli {
   options: CliOptions;
   positional: string[];
@@ -44,6 +44,7 @@ ${bold('COMMANDS:')}
 
 ${bold('OPTIONS:')}
   -o, --output <dir>   Output directory (default: ./<project-name>)
+  -c, --config <file>  Config file for non-interactive mode (JSON)
   -v, --version        Show version number
   -h, --help           Show this help message
 
@@ -54,11 +55,23 @@ ${bold('EXAMPLES:')}
   ${dim('# Create project in specific directory')}
   bakery -o ./my-project
 
+  ${dim('# Create project from config file (non-interactive)')}
+  bakery --config bakery.json
+
+  ${dim('# Create project from config with custom output')}
+  bakery --config bakery.json -o ./my-project
+
   ${dim('# List installed plugins')}
   bakery plugins list
 
-  ${dim('# Install a plugin')}
-  bakery plugins add tailwind
+${bold('CONFIG FILE FORMAT:')}
+  ${dim('{')}
+  ${dim('  "projectName": "my-app",')}
+  ${dim('  "description": "My awesome app",')}
+  ${dim('  "archetype": "cli",  // cli | api | full-stack | effect-cli | effect-full-stack')}
+  ${dim('  "license": "MIT",')}
+  ${dim('  "addons": ["docker", "ci", "docs"]')}
+  ${dim('}')}
 
 ${bold('ARCHETYPES:')}
   ${green('•')} CLI Tool - Command-line applications
@@ -76,9 +89,6 @@ ${bold('INCLUDED IN ALL PROJECTS:')}
 `);
 }
 
-/**
- * Parse raw CLI arguments into validated options and positional args
- */
 function parseArgs(args: readonly string[]): ParsedCli {
   const rawOptions: Record<string, unknown> = {};
   const positional: string[] = [];
@@ -103,6 +113,16 @@ function parseArgs(args: readonly string[]): ParsedCli {
         i += 2;
         break;
       }
+      case '-c':
+      case '--config': {
+        const nextArg = args[i + 1];
+        if (nextArg === undefined || nextArg.startsWith('-')) {
+          throw new CliParseError('--config requires a file path');
+        }
+        rawOptions['config'] = nextArg;
+        i += 2;
+        break;
+      }
       case '-v':
       case '--version':
         rawOptions['version'] = true;
@@ -122,7 +142,6 @@ function parseArgs(args: readonly string[]): ParsedCli {
     }
   }
 
-  // Validate options against schema
   const parseResult = CliOptionsSchema.safeParse(rawOptions);
 
   if (!parseResult.success) {
@@ -137,9 +156,6 @@ function parseArgs(args: readonly string[]): ParsedCli {
   return { options: parseResult.data, positional };
 }
 
-/**
- * Custom error class for CLI parsing failures
- */
 class CliParseError extends Error {
   constructor(message: string) {
     super(message);
@@ -151,7 +167,6 @@ async function main(): Promise<void> {
   try {
     const args = process.argv.slice(2);
 
-    // Handle subcommands first
     const firstArg = args[0];
     if (firstArg === 'plugins') {
       await handlePluginsCommand(args.slice(1));
@@ -172,7 +187,18 @@ async function main(): Promise<void> {
 
     const outputPath = options.output ?? positional[0];
 
-    await runWizard(outputPath);
+    if (options.config) {
+      const configResult = loadConfigFile(options.config);
+
+      if (configResult.isErr()) {
+        console.error(error(formatConfigError(configResult.error)));
+        process.exit(1);
+      }
+
+      await runFromConfig(configResult.value, outputPath);
+    } else {
+      await runWizard(outputPath);
+    }
   } catch (err) {
     if (err instanceof CliParseError) {
       console.error(error(err.message));

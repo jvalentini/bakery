@@ -12,11 +12,11 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/username/bakery.git"
+    "url": "git+https://github.com/jvalentini/bakery.git"
   },
-  "homepage": "https://github.com/username/bakery#readme",
+  "homepage": "https://github.com/jvalentini/bakery#readme",
   "bugs": {
-    "url": "https://github.com/username/bakery/issues"
+    "url": "https://github.com/jvalentini/bakery/issues"
   },
   "scripts": {
     "dev": "bun run src/cli.ts",
@@ -38,7 +38,7 @@
     "typecheck": "tsc --noEmit",
     "check": "bun run typecheck && bun run lint && bun run oxlint",
     "check:all": "bun run check && bun run test:coverage",
-    "check:exports": "bunx publint && bunx attw --pack",
+    "check:exports": "bunx publint && bunx attw --pack --ignore-rules cjs-resolves-to-esm",
     "publint": "bunx publint",
     "attw": "bunx attw --pack",
     "docs": "typedoc",

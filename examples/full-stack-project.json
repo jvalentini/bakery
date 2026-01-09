@@ -1,0 +1,11 @@
+{
+  "projectName": "my-app",
+  "description": "A full-stack application with React and Express",
+  "author": "Your Name",
+  "license": "MIT",
+  "githubUsername": "yourusername",
+  "archetype": "full-stack",
+  "apiFramework": "express",
+  "webFramework": "react-vite",
+  "addons": ["docker", "ci", "docs", "security", "tanstack-query"]
+}

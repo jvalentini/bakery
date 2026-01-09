@@ -12,6 +12,16 @@ DIM='\033[2m'
 BOLD='\033[1m'
 NC='\033[0m'
 
+CLEANUP_DIR=""
+
+cleanup() {
+    if [[ -n "${CLEANUP_DIR:-}" ]] && [[ -d "${CLEANUP_DIR:-}" ]]; then
+        rm -rf "$CLEANUP_DIR"
+    fi
+}
+
+trap cleanup EXIT
+
 error() {
     echo -e "${RED}error:${NC} $1" >&2
     exit 1
@@ -94,19 +104,19 @@ install_mise() {
 run_with_mise() {
     install_mise
 
-    local tmp_dir
-    tmp_dir=$(mktemp -d)
-    trap 'rm -rf "$tmp_dir"' EXIT
+    CLEANUP_DIR=$(mktemp -d)
 
     info "Cloning bakery..."
-    git clone --depth 1 "https://github.com/${REPO}.git" "$tmp_dir/bakery" 2>/dev/null || \
+    git clone --depth 1 "https://github.com/${REPO}.git" "$CLEANUP_DIR/bakery" 2>/dev/null || \
         error "Failed to clone repository"
 
-    cd "$tmp_dir/bakery"
+    cd "$CLEANUP_DIR/bakery"
 
     info "Installing tools with mise..."
+    mise trust --all 2>/dev/null || true
     mise install
-    mise use --global bun@latest
+
+    eval "$(mise env)"
 
     info "Installing dependencies..."
     bun install --silent
@@ -137,12 +147,10 @@ main() {
 
     info "Version: ${version}"
 
-    local tmp_dir
-    tmp_dir=$(mktemp -d)
-    trap 'rm -rf "$tmp_dir"' EXIT
+    CLEANUP_DIR=$(mktemp -d)
 
     local binary_path
-    binary_path=$(download_binary "$version" "$platform" "$tmp_dir")
+    binary_path=$(download_binary "$version" "$platform" "$CLEANUP_DIR")
 
     success "Downloaded successfully!\n"
 

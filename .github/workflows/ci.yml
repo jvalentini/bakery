@@ -89,8 +89,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
+      - name: Install actionlint
+        run: |
+          bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+
       - name: Run actionlint
-        uses: rhysd/actionlint-action@v1
+        run: ./actionlint
 
   security:
     name: Security Scan
