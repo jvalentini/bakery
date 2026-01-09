@@ -3,8 +3,8 @@ severity:
   - HIGH
   - MEDIUM
 
-vulnerability:
-  type:
+pkg:
+  types:
     - os
     - library
 
