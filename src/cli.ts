@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 
 import { z } from 'zod';
+import { handlePluginsCommand } from './commands/plugins.js';
 import { bold, cyan, dim, error, green } from './utils/colors.js';
 import { runWizard } from './wizard/index.js';
 
@@ -36,6 +37,10 @@ ${dim('Bake fresh projects from recipes - a modular project scaffolder')}
 
 ${bold('USAGE:')}
   bakery [options] [output-directory]
+  bakery <command> [args]
+
+${bold('COMMANDS:')}
+  plugins              Manage Bakery plugins (list, add, remove, create)
 
 ${bold('OPTIONS:')}
   -o, --output <dir>   Output directory (default: ./<project-name>)
@@ -48,6 +53,12 @@ ${bold('EXAMPLES:')}
 
   ${dim('# Create project in specific directory')}
   bakery -o ./my-project
+
+  ${dim('# List installed plugins')}
+  bakery plugins list
+
+  ${dim('# Install a plugin')}
+  bakery plugins add tailwind
 
 ${bold('ARCHETYPES:')}
   ${green('•')} CLI Tool - Command-line applications
@@ -139,6 +150,14 @@ class CliParseError extends Error {
 async function main(): Promise<void> {
   try {
     const args = process.argv.slice(2);
+
+    // Handle subcommands first
+    const firstArg = args[0];
+    if (firstArg === 'plugins') {
+      await handlePluginsCommand(args.slice(1));
+      process.exit(0);
+    }
+
     const { options, positional } = parseArgs(args);
 
     if (options.version) {
