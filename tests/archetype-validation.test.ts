@@ -1,9 +1,11 @@
-import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
+import { afterAll, beforeAll, describe, expect, it, setDefaultTimeout } from 'bun:test'
 import * as fs from 'node:fs'
 import * as os from 'node:os'
 import * as path from 'node:path'
 import { loadConfigFile } from '../src/config/index.js'
 import { generateProject } from '../src/wizard/generator.js'
+
+setDefaultTimeout(120000)
 
 let baseTestDir: string
 

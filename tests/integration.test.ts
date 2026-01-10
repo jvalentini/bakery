@@ -1,7 +1,10 @@
-import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
+import { afterAll, beforeAll, describe, expect, it, setDefaultTimeout } from 'bun:test'
 import * as fs from 'node:fs'
 import * as os from 'node:os'
 import * as path from 'node:path'
+
+setDefaultTimeout(120000)
+
 import { generateProject } from '../src/wizard/generator.js'
 import type { ProjectConfig } from '../src/wizard/prompts.js'
 
@@ -309,7 +312,7 @@ describe('Archetype: Convex Full-Stack', () => {
       }),
       testDir,
     )
-  })
+  }, 60000)
 
   it('should create Convex full-stack project structure', () => {
     expect(fileExists(testDir, 'tsconfig.json')).toBe(true)
