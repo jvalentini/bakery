@@ -3,8 +3,10 @@
 import { createRequire } from 'node:module'
 import { z } from 'zod'
 import { handleCacheCommand } from './commands/cache.js'
+import { handleLintCommand } from './commands/lint.js'
 import { handlePluginsCommand } from './commands/plugins.js'
 import { handleSyncCommand } from './commands/sync.js'
+import { handleTestCommand } from './commands/test.js'
 import { formatConfigError, loadConfigFile } from './config/index.js'
 import { fetchRemoteTemplate, formatRemoteRef } from './remote/index.js'
 import { bold, cyan, dim, error, green } from './utils/colors.js'
@@ -55,6 +57,8 @@ ${bold('COMMANDS:')}
   plugins              Manage Bakery plugins (list, add, remove, create)
   cache                Manage cached remote templates (list, clear)
   sync                 Update project from latest templates
+  lint                 Lint templates for valid JSON, EJS syntax, required files
+  test                 Run template validation tests (smoke, quick, full)
 
 ${bold('OPTIONS:')}
   -o, --output <dir>   Output directory (default: ./<project-name>)
@@ -222,6 +226,16 @@ async function main(): Promise<void> {
 
     if (firstArg === 'cache') {
       await handleCacheCommand(args.slice(1))
+      process.exit(0)
+    }
+
+    if (firstArg === 'lint') {
+      await handleLintCommand(args.slice(1))
+      process.exit(0)
+    }
+
+    if (firstArg === 'test') {
+      await handleTestCommand(args.slice(1))
       process.exit(0)
     }
 
