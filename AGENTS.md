@@ -6,188 +6,202 @@ This document provides instructions for AI agents working with this codebase. Al
 
 | Task | Command | Exit 0 = Success |
 |------|---------|------------------|
+| Setup project | `make setup` | Yes |
 | Install deps | `make install` | Yes |
+| Run dev | `make dev` | Yes |
 | Run tests | `make test` | Yes |
 | Type check | `make typecheck` | Yes |
-| Lint code | `make lint` | Yes |
-| Fix lint issues (safe) | `make lint-fix` | Yes |
-| Fix lint issues (all) | `make lint-fix-all` | Yes |
+| Lint code (auto-fix) | `make lint` | Yes |
 | Format code | `make format` | Yes |
 | All checks | `make check` | Yes |
 | Build | `make build` | Yes |
 | Generate docs | `make docs` | Yes |
 | Security scan | `make security` | Yes |
 
-## Tools Overview
+## Workflow
 
-### Bun
-Runtime and package manager. Replaces Node.js + npm.
-
-```bash
-bun install          # Install dependencies
-bun run <script>     # Run package.json script
-bun test             # Run tests
-bun build            # Compile to binary
-```
-
-### Biome
-Linter and formatter. Replaces ESLint + Prettier.
+### Before Committing
+**ALWAYS run `make check` before committing.** This runs type checking, linting, and formatting validation.
 
 ```bash
-make lint            # Check for issues
-make lint-fix        # Auto-fix issues
-make format          # Format all files
-```
-
-**When to run**: After any code changes, before committing.
-
-### Oxlint
-Fast supplementary linter. Catches issues Biome misses.
-
-```bash
-make oxlint          # Run oxlint
-```
-
-**When to run**: Part of `make check`, runs automatically.
-
-### TypeScript
-Type checking only (Bun handles execution).
-
-```bash
-make typecheck       # Check types without emitting
-make build           # Compile to dist/
-```
-
-**When to run**: After changing type signatures or interfaces.
-
-### Lefthook
-Git hooks manager. Runs automatically on commit/push.
-
-- **pre-commit**: Runs `biome check` and `oxlint` on staged files
-- **pre-push**: Runs `typecheck` and `test`
-
-No manual intervention needed.
-
-## Workflow Commands
-
-### Before Making Changes
-```bash
-make install         # Ensure deps are current
-```
-
-### After Making Changes
-```bash
-make check           # Run typecheck + lint + oxlint
+make check           # Run typecheck + lint + oxlint (full validation)
 make test            # Run test suite
 ```
 
-### Before Committing
+### Common Commands
 ```bash
-make lint-fix        # Auto-fix lint issues
-make format          # Ensure consistent formatting
-make check           # Verify everything passes
-make test            # Verify tests pass
+make setup           # Initial setup (install tools, git hooks)
+make install         # Install dependencies
+make dev             # Run in development mode
+make lint            # Auto-fix lint issues
+make format          # Format code
+bd sync              # Sync with Beads (run before git push)
 ```
 
-### Full Validation
-```bash
-make check && make test
-```
-
-## Docker Commands
-
-For running without local Bun installation:
+### Finding the Next Task
+When starting work or looking for what to do next, use Beads to find high-priority tasks:
 
 ```bash
-make docker-test     # Run tests in container
-make docker-lint     # Run linting in container
-make docker-check    # Run all checks in container
-make docker-shell    # Interactive shell in container
+bd ready --json              # Get next ready task in JSON format
+bv --robot-priority          # Get task priority recommendations
 ```
 
-## Understanding Exit Codes
+**Workflow**: Run `bd ready --json` to see the next task, or combine with `bv --robot-priority` to get AI-recommended priorities. This helps identify what to work on next.
 
-| Code | Meaning |
-|------|---------|
-| 0 | Success |
-| 1 | Lint/type/test failure |
-| 2 | File not found |
-| 127 | Command not found (missing tool) |
+## Task Management
 
-## Common Issues
+### Beads (bd) - Task Tracking
+- **`bd ready`** - Get the next ready task
+- **`bd ready --json`** - Get next task in JSON format (for programmatic use)
+- **`bd create`** - Create a new task
+- **`bd close`** - Close a completed task
+- **`bd sync`** - Sync with Beads tool (run before git push)
 
-### "command not found: bun"
-```bash
-curl -fsSL https://bun.sh/install | bash
-```
+### Beads Viewer (bv) - Task Analysis
+- **`bv --robot-priority`** - Get AI-recommended task priorities
+- **`bv --robot-plan`** - Get AI-generated plan for tasks
 
-### "Dependencies out of date"
-```bash
-make install
-```
+**Finding the next task**: Run `bd ready --json` or combine with `bv --robot-priority` to identify high-priority work.
 
-### "Lint errors on commit"
-```bash
-make lint-fix
-make format
-```
+## Tool Integration
 
-### "Type errors"
-```bash
-make typecheck       # See full error output
-```
-
-## File Structure
-
-```
-src/
-├── cli.ts           # Entry point
-├── wizard/          # Scaffolding wizard
-│   ├── index.ts     # Wizard runner
-│   ├── prompts.ts   # User prompts
-│   └── generator.ts # Project generator
-├── utils/           # Utilities
-│   ├── colors.ts    # Terminal colors
-│   ├── errors.ts    # Error classes
-│   └── logger.ts    # Logging
-templates/           # Project templates
-tests/               # Test files
-```
-
-## Test Commands
+### UBS - Bug Scanner
+Pre-commit validation and bug detection:
 
 ```bash
-make test            # Run all tests
-make test-watch      # Watch mode
-make test-coverage   # With coverage report
+ubs --staged --fail-on-warning    # Scan staged changes, fail on warnings
+ubs --staged                      # Scan staged changes (report only)
+ubs doctor                        # Check UBS installation and health
 ```
 
-Tests use Bun's built-in test runner. Files matching `*.test.ts` in `tests/` are automatically discovered.
+**When to use**: Before committing to catch bugs and issues in staged files.
 
-## Build Commands
+### CASS - Cross-Agent Session Search
+Search past sessions for solutions and context:
 
 ```bash
-make build           # TypeScript to dist/
-make build-binary    # Native binary for current platform
-make build-all       # Binaries for all platforms
+cass search "query" --robot       # Search sessions with AI context
+cass index --stats                # View indexing statistics
 ```
 
-## Release Commands
+**When to use**: When looking for similar problems solved in past sessions or need historical context.
+
+### CM - Context Memory
+Store and retrieve task context:
 
 ```bash
-make bump-patch      # 0.1.0 -> 0.1.1
-make bump-minor      # 0.1.0 -> 0.2.0
-make bump-major      # 0.1.0 -> 1.0.0
-make release         # Create GitHub release
-make release-patch   # Bump + release
+cm context "task" --json          # Get context for a task in JSON format
+cm context "task"                 # Get context for a task
 ```
+
+**When to use**: When working on tasks that need context from previous work or related tasks.
+
+## Code Search Tools
+
+**Prefer semantic search over text search when possible** - it understands code structure and meaning.
+
+### Semantic Search
+- **`mgrep`** - Semantic code search (prefer over grep/ripgrep for natural language queries)
+  ```bash
+  mgrep "What code parsers are available?"
+  mgrep "How are chunks defined?" src/models
+  mgrep -m 10 "Maximum concurrent workers in parser?"
+  ```
+
+### AST-Based Search
+- **`grep-ast`** - AST-based pattern matching (finds code patterns, not just text)
+- **`ast-grep`** - Fast AST-based code search and transformation
+
+### Text Search
+- **`rg` / `ripgrep`** - Fast text search (faster than grep, respects .gitignore)
+  ```bash
+  rg "functionName"               # Search for text pattern
+  rg -t ts "pattern"              # Search only TypeScript files
+  rg -i "pattern"                 # Case-insensitive search
+  ```
+- **`grep`** - Basic text search (fallback if ripgrep unavailable)
+- **`ag` (The Silver Searcher)** - Fast text search alternative
+- **`ack`** - Text search tool optimized for code
+
+### File Finding
+- **`fd`** - Fast file finder (alternative to `find`, respects .gitignore)
+  ```bash
+  fd "pattern"                    # Find files matching pattern
+  fd -e ts                        # Find only .ts files
+  ```
+- **`fzf`** - Fuzzy finder (interactive file/command selection)
+  ```bash
+  fzf                            # Interactive fuzzy file finder
+  fzf --preview 'bat {}'         # Preview files with syntax highlighting
+  ls | fzf                       # Fuzzy search through command output
+  git ls-files | fzf             # Fuzzy search through git-tracked files
+  ```
+
+**Search strategy**: Use `mgrep` for semantic queries, `rg` for exact text matches, `grep-ast`/`ast-grep` for code patterns, `fd` for finding files, and `fzf` for interactive fuzzy selection.
+
+## Permissions
+
+### Dangerous Commands Requiring Approval
+
+These commands are destructive or irreversible and should **never be run without explicit user approval**:
+
+```bash
+rm -rf *                          # Destructive - deletes all files
+rm -r *                           # Destructive - recursive deletion
+git reset --hard*                 # Irreversible - discards all uncommitted changes
+git clean -fd*                    # Destructive - removes untracked files
+git push --force*                 # Dangerous - overwrites remote history
+git push -f *                     # Dangerous - force push shorthand
+```
+
+**Rule**: If a command could cause data loss or overwrite remote history, ask for explicit approval before running.
 
 ## Key Patterns
 
 1. **Always use Makefile targets** - They wrap the underlying tools consistently
 2. **Run `make check` before committing** - Catches most issues
 3. **Exit code 0 means success** - Non-zero means failure
-4. **Docker commands mirror local commands** - Just prefix with `docker-`
+4. **Use Beads (`bd` CLI)** - Run `bd sync` before pushing to remote to sync with Beads tool
+
+## Critical Rules
+
+1. **Never delete files** without explicit user command in current session
+2. **Use Bun** for JS/TS (never npm/yarn/pnpm)
+3. **Use mise** for runtime versions (bun, node, etc.)
+4. **Use Biome + Oxlint** for linting (never ESLint/Prettier)
+5. **Use TypeScript** for new code (never JavaScript)
+
+## Code Quality Rules
+
+### Variable Naming
+**CRITICAL**: Never add an underscore or prepend an underscore to a variable name in order to fix linting errors unless explicitly approved by the user. Instead, fix the underlying issue (e.g., use the variable, remove it if unused, or refactor the code properly).
+
+### Error Handling
+- **Use `neverthrow` Result types** for functions that can fail. Return `Result<T, E>` and use `ok()`/`err()` helpers.
+- **Use custom error classes** (extend `CliError`) for domain-specific errors with meaningful names.
+- **Always handle errors explicitly** - check `.isErr()` or use `.map()`/`.mapErr()` on Results.
+- **Never throw in async functions** - return `Result` types instead.
+
+### Type Safety
+- **Use Zod schemas** for runtime validation. Infer TypeScript types with `z.infer<typeof Schema>`.
+- **TypeScript strictest config** - all strict checks are enabled. No `any` types (use `unknown` if needed).
+- **Always check for `undefined`** when accessing array elements or optional properties (`noUncheckedIndexedAccess` is enabled).
+
+### Async/Promises
+- **Always handle promises** - oxlint enforces `no-floating-promises`. Use `await`, `.then()`, or `.catch()`.
+- **Mark async functions** - if a function returns a Promise, it should be marked `async` or explicitly return `Promise<T>`.
+
+### Code Style
+- **Single quotes** for strings (Biome config).
+- **Always semicolons** (Biome config).
+- **Use `const`** - `useConst` rule enforces this.
+- **Use template literals** instead of string concatenation (`useTemplate` rule).
+- **No parameter reassignment** - `noParameterAssign` is an error.
+
+### Testing
+- **Write tests** for new functionality using Bun's test runner (`bun:test`).
+- **Test error cases** - especially when using Result types, test both success and error paths.
+- **Use descriptive test names** - follow the pattern `describe('feature', () => { it('should do something', () => {}) })`.
 
 ## Landing the Plane (Session Completion)
 
@@ -196,12 +210,12 @@ make release-patch   # Bump + release
 **MANDATORY WORKFLOW:**
 
 1. **File issues for remaining work** - Create issues for anything that needs follow-up
-2. **Run quality gates** (if code changed) - Tests, linters, builds
+2. **Run quality gates** (if code changed) - Run `make check && make test`
 3. **Update issue status** - Close finished work, update in-progress items
 4. **PUSH TO REMOTE** - This is MANDATORY:
    ```bash
    git pull --rebase
-   bd sync
+   bd sync              # Sync with Beads tool
    git push
    git status  # MUST show "up to date with origin"
    ```
