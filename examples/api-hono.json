@@ -1,0 +1,10 @@
+{
+  "projectName": "my-hono-api",
+  "description": "A REST API built with Hono",
+  "author": "Test Author",
+  "license": "MIT",
+  "githubUsername": "testuser",
+  "archetype": "api",
+  "apiFramework": "hono",
+  "addons": ["security", "zod"]
+}

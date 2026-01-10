@@ -1,0 +1,10 @@
+{
+  "projectName": "my-elysia-api",
+  "description": "A REST API built with Elysia",
+  "author": "Test Author",
+  "license": "MIT",
+  "githubUsername": "testuser",
+  "archetype": "api",
+  "apiFramework": "elysia",
+  "addons": ["docker", "ci"]
+}

@@ -1,0 +1,11 @@
+{
+  "projectName": "my-tanstack-app",
+  "description": "A full-stack app with Hono and TanStack Start",
+  "author": "Test Author",
+  "license": "MIT",
+  "githubUsername": "testuser",
+  "archetype": "full-stack",
+  "apiFramework": "hono",
+  "webFramework": "tanstack-start",
+  "addons": ["tanstack-form", "tanstack-query"]
+}

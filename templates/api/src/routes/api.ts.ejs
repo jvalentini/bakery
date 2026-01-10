@@ -108,7 +108,8 @@ apiRoutes.get('/items/:id', (req, res) => {
   const item = items.find((i) => i.id === req.params.id);
 
   if (!item) {
-    return res.status(404).json({ error: 'Item not found' });
+    res.status(404).json({ error: 'Item not found' });
+    return;
   }
 
   res.json({ data: item });
@@ -120,7 +121,8 @@ apiRoutes.post('/items', (req, res) => {
   const result = ItemSchema.safeParse(req.body);
 
   if (!result.success) {
-    return res.status(400).json({ error: 'Validation failed', details: result.error.issues });
+    res.status(400).json({ error: 'Validation failed', details: result.error.issues });
+    return;
   }
 
   const body = result.data;
@@ -144,7 +146,8 @@ apiRoutes.delete('/items/:id', (req, res) => {
   const index = items.findIndex((i) => i.id === req.params.id);
 
   if (index === -1) {
-    return res.status(404).json({ error: 'Item not found' });
+    res.status(404).json({ error: 'Item not found' });
+    return;
   }
 
   items.splice(index, 1);
@@ -160,9 +163,9 @@ const ItemSchema = z.object({
   description: z.string().optional(),
 });
 
-type Item = z.infer<typeof ItemSchema> & { id: string; createdAt: string };
+export type Item = z.infer<typeof ItemSchema> & { id: string; createdAt: string };
 <% } else { -%>
-interface Item {
+export interface Item {
   id: string;
   name: string;
   description?: string;
@@ -180,22 +183,22 @@ export const apiRoutes = new Elysia({ prefix: '/api' })
     total: items.length,
   }))
   // Get single item
-  .get('/items/:id', ({ params, error }) => {
+  .get('/items/:id', ({ params, status }) => {
     const item = items.find((i) => i.id === params.id);
 
     if (!item) {
-      return error(404, { error: 'Item not found' });
+      return status(404, { error: 'Item not found' });
     }
 
     return { data: item };
   })
   // Create item
-  .post('/items', ({ body, error }) => {
+  .post('/items', ({ body, status }) => {
 <% if (hasAddon('zod')) { -%>
     const result = ItemSchema.safeParse(body);
 
     if (!result.success) {
-      return error(400, { error: 'Validation failed', details: result.error.issues });
+      return status(400, { error: 'Validation failed', details: result.error.issues });
     }
 
     const validBody = result.data;
@@ -219,11 +222,11 @@ export const apiRoutes = new Elysia({ prefix: '/api' })
     }),
   })
   // Delete item
-  .delete('/items/:id', ({ params, error }) => {
+  .delete('/items/:id', ({ params, status }) => {
     const index = items.findIndex((i) => i.id === params.id);
 
     if (index === -1) {
-      return error(404, { error: 'Item not found' });
+      return status(404, { error: 'Item not found' });
     }
 
     items.splice(index, 1);

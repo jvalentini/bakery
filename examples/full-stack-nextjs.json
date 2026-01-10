@@ -1,0 +1,11 @@
+{
+  "projectName": "my-nextjs-app",
+  "description": "A full-stack app with Express and Next.js",
+  "author": "Test Author",
+  "license": "MIT",
+  "githubUsername": "testuser",
+  "archetype": "full-stack",
+  "apiFramework": "express",
+  "webFramework": "nextjs",
+  "addons": ["docker", "ci", "docs"]
+}

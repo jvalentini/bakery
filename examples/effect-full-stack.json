@@ -1,0 +1,10 @@
+{
+  "projectName": "my-effect-app",
+  "description": "A full-stack app with Effect-ts and Convex",
+  "author": "Test Author",
+  "license": "MIT",
+  "githubUsername": "testuser",
+  "archetype": "effect-full-stack",
+  "webFramework": "tanstack-start",
+  "addons": ["convex", "tanstack-query"]
+}

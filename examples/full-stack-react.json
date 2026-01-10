@@ -1,0 +1,11 @@
+{
+  "projectName": "my-react-app",
+  "description": "A full-stack app with Hono and React",
+  "author": "Test Author",
+  "license": "MIT",
+  "githubUsername": "testuser",
+  "archetype": "full-stack",
+  "apiFramework": "hono",
+  "webFramework": "react-vite",
+  "addons": ["tanstack-query", "tanstack-router"]
+}

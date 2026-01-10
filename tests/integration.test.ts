@@ -1,18 +1,4 @@
-/**
- * Integration tests for template generation
- *
- * Tests cover:
- * - All archetypes generate valid projects
- * - Framework combinations work correctly
- * - Addon inclusion/exclusion
- * - Generated projects pass typecheck/lint
- * - Snapshot tests for generated files
- *
- * Note: Uses execSync with hardcoded commands for testing generated projects.
- * This is safe as all command strings are static test commands, not user input.
- */
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test';
-import { execSync } from 'node:child_process';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
@@ -82,20 +68,6 @@ function listFiles(dir: string, prefix = ''): string[] {
   }
 
   return files.sort();
-}
-
-/** Run a command in a directory and return success status */
-function runCommand(cwd: string, command: string): { success: boolean; output: string } {
-  try {
-    const output = execSync(command, { cwd, encoding: 'utf-8', stdio: 'pipe' });
-    return { success: true, output };
-  } catch (error) {
-    const execError = error as { stdout?: string; stderr?: string; message?: string };
-    return {
-      success: false,
-      output: execError.stderr || execError.stdout || execError.message || 'Unknown error',
-    };
-  }
 }
 
 // ====================
@@ -565,96 +537,6 @@ describe('Multiple addons combined', () => {
 
     // Security
     expect(fileExists(testDir, 'trivy.yaml')).toBe(true);
-  });
-});
-
-// ====================
-// Validation Tests (Slower)
-// ====================
-
-describe('Generated project validation', () => {
-  // These tests are slower as they run actual commands
-
-  describe('CLI archetype', () => {
-    let testDir: string;
-
-    beforeAll(() => {
-      testDir = createTestDir('validation-cli');
-      generateProject(createConfig({ archetype: 'cli' }), testDir);
-    });
-
-    it('should have valid JSON in package.json', () => {
-      expect(() => readJson(testDir, 'package.json')).not.toThrow();
-    });
-
-    it('should have valid JSON in tsconfig.json', () => {
-      expect(() => readJson(testDir, 'tsconfig.json')).not.toThrow();
-    });
-
-    it('should have valid JSON in biome.json', () => {
-      expect(() => readJson(testDir, 'biome.json')).not.toThrow();
-    });
-
-    it('should install dependencies successfully', () => {
-      const result = runCommand(testDir, 'bun install');
-      expect(result.success).toBe(true);
-    });
-
-    it('should pass TypeScript typecheck', () => {
-      // First install deps
-      runCommand(testDir, 'bun install');
-      const result = runCommand(testDir, 'bun run typecheck');
-      expect(result.success).toBe(true);
-    });
-
-    it('should pass linting', () => {
-      runCommand(testDir, 'bun install');
-      // Use lint:fix to auto-fix formatting issues in generated templates
-      // This tests that the code is valid, even if formatting differs from biome defaults
-      runCommand(testDir, 'bun run lint:fix');
-      // After fixing, lint should pass
-      const result = runCommand(testDir, 'bun run lint');
-      expect(result.success).toBe(true);
-    });
-
-    it('should build successfully', () => {
-      runCommand(testDir, 'bun install');
-      const result = runCommand(testDir, 'bun run build');
-      expect(result.success).toBe(true);
-      expect(fileExists(testDir, 'dist', 'cli.js')).toBe(true);
-    });
-
-    it('should run tests successfully', () => {
-      runCommand(testDir, 'bun install');
-      const result = runCommand(testDir, 'bun test');
-      expect(result.success).toBe(true);
-    });
-  });
-
-  describe('API archetype (Hono)', () => {
-    let testDir: string;
-
-    beforeAll(() => {
-      testDir = createTestDir('validation-api-hono');
-      generateProject(
-        createConfig({
-          archetype: 'api',
-          apiFramework: 'hono',
-        }),
-        testDir
-      );
-    });
-
-    it('should install dependencies successfully', () => {
-      const result = runCommand(testDir, 'bun install');
-      expect(result.success).toBe(true);
-    });
-
-    it('should pass TypeScript typecheck', () => {
-      runCommand(testDir, 'bun install');
-      const result = runCommand(testDir, 'bun run typecheck');
-      expect(result.success).toBe(true);
-    });
   });
 });
 

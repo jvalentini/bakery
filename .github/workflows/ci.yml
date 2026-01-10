@@ -133,6 +133,23 @@ jobs:
           trivy-config: trivy.yaml
           format: 'table'
 
+  validate-archetypes:
+    name: Validate Archetypes (Quick)
+    runs-on: ubuntu-latest
+    needs: quality
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Bun with cache
+        uses: ./.github/actions/setup-bun
+
+      - name: Validate archetypes (quick tier)
+        run: bun run validate:quick
+
   build:
     name: Build Check
     runs-on: ubuntu-latest

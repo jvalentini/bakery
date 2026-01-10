@@ -1,0 +1,11 @@
+{
+  "projectName": "my-vue-app",
+  "description": "A full-stack app with Elysia and Vue",
+  "author": "Test Author",
+  "license": "MIT",
+  "githubUsername": "testuser",
+  "archetype": "full-stack",
+  "apiFramework": "elysia",
+  "webFramework": "vue",
+  "addons": ["security", "zod"]
+}

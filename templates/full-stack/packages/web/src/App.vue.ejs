@@ -2,8 +2,8 @@
 <script setup lang="ts">
 <% if (hasAddon('tanstack-query')) { -%>
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query';
-<% } -%>
 import { ref } from 'vue';
+<% } -%>
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -45,8 +45,6 @@ function handleSubmit() {
     inputText.value = '';
   }
 }
-<% } else { -%>
-const inputText = ref('');
 <% } -%>
 </script>
 

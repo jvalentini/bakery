@@ -1,0 +1,10 @@
+{
+  "projectName": "my-express-api",
+  "description": "A REST API built with Express",
+  "author": "Test Author",
+  "license": "MIT",
+  "githubUsername": "testuser",
+  "archetype": "api",
+  "apiFramework": "express",
+  "addons": ["convex", "neverthrow"]
+}

@@ -8,6 +8,10 @@
     "convex/schema.ts.ejs",
     "convex/items.ts.ejs",
     "convex/tsconfig.json",
+    "convex/_generated/server.ts",
+    "convex/_generated/api.js",
+    "convex/_generated/api.d.ts",
+    "convex/_generated/dataModel.d.ts",
     ".env.local.example.ejs"
   ]
 }

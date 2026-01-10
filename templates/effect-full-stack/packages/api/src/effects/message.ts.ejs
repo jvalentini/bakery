@@ -1,7 +1,5 @@
-import { Context, Effect, Layer, Schema } from 'effect';
-import type { Id } from '../../convex/_generated/dataModel';
+import { Context, Effect, Layer, Schema, ParseResult } from 'effect';
 
-// Message schema using Effect Schema
 export const MessageSchema = Schema.Struct({
   _id: Schema.String,
   text: Schema.String,
@@ -9,26 +7,23 @@ export const MessageSchema = Schema.Struct({
   createdAt: Schema.Number,
 });
 
-export type Message = Schema.Schema.Type<typeof MessageSchema>;
+export type Message = typeof MessageSchema.Type;
 
-// Create message input schema
 export const CreateMessageSchema = Schema.Struct({
   text: Schema.String.pipe(Schema.minLength(1)),
   author: Schema.String.pipe(Schema.minLength(1)),
 });
 
-export type CreateMessageInput = Schema.Schema.Type<typeof CreateMessageSchema>;
+export type CreateMessageInput = typeof CreateMessageSchema.Type;
 
-// Message service definition
 export class MessageService extends Context.Tag('MessageService')<
   MessageService,
   {
-    readonly validate: (input: unknown) => Effect.Effect<CreateMessageInput, Schema.ParseError>;
+    readonly validate: (input: unknown) => Effect.Effect<CreateMessageInput, ParseResult.ParseError>;
     readonly formatMessage: (message: Message) => Effect.Effect<string>;
   }
 >() {}
 
-// Message service implementation
 export const MessageServiceLive = Layer.succeed(
   MessageService,
   MessageService.of({

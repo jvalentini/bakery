@@ -40,27 +40,23 @@ export const ConfigServiceLive = Layer.succeed(
   ConfigService,
   ConfigService.of({
     load: () =>
-      Effect.try({
-        try: () => {
-          const configPath = getConfigFilePath();
-          if (fs.existsSync(configPath)) {
+      Effect.sync(() => {
+        const configPath = getConfigFilePath();
+        if (fs.existsSync(configPath)) {
+          try {
             const content = fs.readFileSync(configPath, 'utf8');
             return { ...defaultConfig, ...JSON.parse(content) } as Config;
+          } catch {
+            return defaultConfig;
           }
-          return defaultConfig;
-        },
-        catch: () => defaultConfig,
+        }
+        return defaultConfig;
       }),
 
     save: (config) =>
-      Effect.try({
-        try: () => {
-          const configPath = getConfigFilePath();
-          fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-        },
-        catch: (error) => {
-          throw new Error(`Failed to save config: ${error}`);
-        },
+      Effect.sync(() => {
+        const configPath = getConfigFilePath();
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
       }),
 
     getConfigPath: () => Effect.succeed(getConfigFilePath()),

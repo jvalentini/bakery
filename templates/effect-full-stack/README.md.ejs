@@ -34,17 +34,21 @@ A full-stack application built with the **Effect Stack**:
 
 ```bash
 # Install dependencies
-bun install
+make install
 
-# Initialize Convex (first time only)
-bunx convex dev
+# Initialize Convex (first time setup)
+# This will prompt you to log in or create a Convex account,
+# then generate type-safe code in convex/_generated/
+bunx convex dev --once
 
-# Copy the Convex URL to .env.local
-echo "VITE_CONVEX_URL=<your-convex-url>" > packages/web/.env.local
-
-# Run development servers
-bun run dev
+# The Convex URL is automatically saved to .env.local
+# Start development (runs both Convex and web servers)
+make dev
 ```
+
+> **Note:** The first time you run `bunx convex dev`, Convex will generate
+> TypeScript types in `convex/_generated/`. This project includes stub types
+> so it typechecks before setup, but you must run Convex to get full type safety.
 
 ## Development
 

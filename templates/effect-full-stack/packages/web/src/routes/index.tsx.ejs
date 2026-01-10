@@ -1,20 +1,28 @@
-import { createFileRoute } from '@tanstack/react-router';
 import { useQuery, useMutation } from 'convex/react';
-import { api } from '../../convex/_generated/api';
+import { api } from '../../../../convex/_generated/api';
 import { useState } from 'react';
-import { Effect, pipe } from 'effect';
-import { MessageService, MessageServiceLive } from '@<%= projectName %>/api/effects/message';
+import { Effect, Schema } from 'effect';
 
-export const Route = createFileRoute('/')({
-  component: Home,
+// Local validation schema - mirrors api package but keeps web self-contained
+const CreateMessageSchema = Schema.Struct({
+  text: Schema.String.pipe(Schema.minLength(1)),
+  author: Schema.String.pipe(Schema.minLength(1)),
 });
 
-function Home() {
+// Message type for Convex query results
+interface Message {
+  _id: string;
+  text: string;
+  author: string;
+  createdAt: number;
+}
+
+export function Home() {
   const [text, setText] = useState('');
   const [author, setAuthor] = useState('');
 
   // Convex queries and mutations
-  const messages = useQuery(api.messages.list, { limit: 20 });
+  const messages = useQuery(api.messages.list, { limit: 20 }) as Message[] | undefined;
   const sendMessage = useMutation(api.messages.send);
   const removeMessage = useMutation(api.messages.remove);
 
@@ -22,16 +30,8 @@ function Home() {
     e.preventDefault();
 
     // Use Effect for validation
-    const program = Effect.gen(function* () {
-      const service = yield* MessageService;
-      const validated = yield* service.validate({ text, author });
-      return validated;
-    });
-
-    const result = await pipe(
-      program,
-      Effect.provide(MessageServiceLive),
-      Effect.runPromise
+    const result = await Effect.runPromise(
+      Schema.decodeUnknown(CreateMessageSchema)({ text, author })
     ).catch(() => null);
 
     if (result) {

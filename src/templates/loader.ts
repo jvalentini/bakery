@@ -106,28 +106,13 @@ export function discoverArchetypes(): LoadedTemplate[] {
   const templatesDir = getTemplatesDir();
   const archetypes: LoadedTemplate[] = [];
 
-  // Check root-level archetype directories
-  const rootDirs = ['cli', 'api', 'full-stack'];
-  for (const dir of rootDirs) {
+  const archetypeDirs = ['cli', 'api', 'full-stack', 'effect-cli', 'effect-full-stack'];
+  for (const dir of archetypeDirs) {
     const dirPath = path.join(templatesDir, dir);
     if (fs.existsSync(dirPath)) {
       const manifest = loadTemplateManifest(dirPath);
       if (manifest) {
         archetypes.push({ manifest, path: dirPath, isPlugin: false });
-      }
-    }
-  }
-
-  // Check effect subdirectories
-  const effectDir = path.join(templatesDir, 'effect');
-  if (fs.existsSync(effectDir)) {
-    for (const subdir of ['cli-api', 'full-stack']) {
-      const subdirPath = path.join(effectDir, subdir);
-      if (fs.existsSync(subdirPath)) {
-        const manifest = loadTemplateManifest(subdirPath);
-        if (manifest) {
-          archetypes.push({ manifest, path: subdirPath, isPlugin: false });
-        }
       }
     }
   }
