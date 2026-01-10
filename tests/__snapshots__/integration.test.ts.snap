@@ -66,6 +66,7 @@ exports[`Snapshot tests CLI archetype package.json should match snapshot 1`] = `
 
 exports[`Snapshot tests CLI archetype file list should match expected file structure 1`] = `
 [
+  ".bakery/manifest.json",
   ".bakery/setup.json",
   ".bakery/setup.ts",
   ".editorconfig",
@@ -89,6 +90,7 @@ exports[`Snapshot tests CLI archetype file list should match expected file struc
 
 exports[`Snapshot tests CLI archetype with all addons file list should match expected file structure 1`] = `
 [
+  ".bakery/manifest.json",
   ".bakery/setup.json",
   ".bakery/setup.ts",
   ".dockerignore",

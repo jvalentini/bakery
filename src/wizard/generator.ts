@@ -1,6 +1,8 @@
 import { execSync, spawnSync } from 'node:child_process'
 import * as fs from 'node:fs'
+import { createRequire } from 'node:module'
 import * as path from 'node:path'
+import { createManifest, saveManifest } from '../sync/manifest.js'
 import {
   createTemplateContext,
   processTemplateDirectory,
@@ -15,6 +17,9 @@ import {
   type SetupTask,
 } from '../templates/loader.js'
 import type { ProjectConfig } from './prompts.js'
+
+const require = createRequire(import.meta.url)
+const pkg = require('../../package.json') as { version: string }
 
 export interface DryRunFile {
   path: string
@@ -334,6 +339,21 @@ function writeSetupConfig(config: ProjectConfig, outputDir: string): void {
   }
 
   fs.writeFileSync(path.join(bakeryDir, 'setup.json'), `${JSON.stringify(setupConfig, null, 2)}\n`)
+
+  const manifestResult = createManifest(outputDir, {
+    bakeryVersion: pkg.version,
+    archetype: config.archetype,
+    addons: config.addons,
+  })
+
+  if (manifestResult.isOk()) {
+    const saveResult = saveManifest(outputDir, manifestResult.value)
+    if (saveResult.isErr()) {
+      console.error(`Warning: Failed to write manifest: ${saveResult.error.message}`)
+    }
+  } else {
+    console.error(`Warning: Failed to create manifest: ${manifestResult.error.message}`)
+  }
 }
 
 /**

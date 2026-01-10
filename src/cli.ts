@@ -3,6 +3,7 @@
 import { createRequire } from 'node:module'
 import { z } from 'zod'
 import { handlePluginsCommand } from './commands/plugins.js'
+import { handleSyncCommand } from './commands/sync.js'
 import { formatConfigError, loadConfigFile } from './config/index.js'
 import { bold, cyan, dim, error, green } from './utils/colors.js'
 import { runFromConfig, runWizard } from './wizard/index.js'
@@ -45,6 +46,7 @@ ${bold('USAGE:')}
 
 ${bold('COMMANDS:')}
   plugins              Manage Bakery plugins (list, add, remove, create)
+  sync                 Update project from latest templates
 
 ${bold('OPTIONS:')}
   -o, --output <dir>   Output directory (default: ./<project-name>)
@@ -180,6 +182,11 @@ async function main(): Promise<void> {
     const firstArg = args[0]
     if (firstArg === 'plugins') {
       await handlePluginsCommand(args.slice(1))
+      process.exit(0)
+    }
+
+    if (firstArg === 'sync') {
+      await handleSyncCommand(args.slice(1))
       process.exit(0)
     }
 
