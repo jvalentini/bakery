@@ -1,20 +1,21 @@
-import { execSync } from 'node:child_process';
-import * as fs from 'node:fs';
-import * as path from 'node:path';
+import { execSync, spawnSync } from 'node:child_process'
+import * as fs from 'node:fs'
+import * as path from 'node:path'
 import {
   createTemplateContext,
   processTemplateDirectory,
   type TemplateContext,
   writeTemplates,
-} from '../templates/engine.js';
-import { getTemplatesDir, resolveTemplates } from '../templates/loader.js';
-import type { ProjectConfig } from './prompts.js';
+} from '../templates/engine.js'
+import {
+  type ArchetypeManifest,
+  getTemplatesDir,
+  loadTemplateManifest,
+  resolveTemplates,
+} from '../templates/loader.js'
+import type { ProjectConfig } from './prompts.js'
 
-/**
- * Generate a project from templates based on configuration
- */
 export function generateProject(config: ProjectConfig, outputDir: string): void {
-  // Create the template context
   const context = createTemplateContext({
     projectName: config.projectName,
     description: config.description,
@@ -25,40 +26,186 @@ export function generateProject(config: ProjectConfig, outputDir: string): void 
     apiFramework: config.apiFramework,
     webFramework: config.webFramework,
     addons: config.addons,
-  });
+  })
 
-  // Resolve all templates needed for this configuration
-  const templates = resolveTemplates(config.archetype, config.addons);
+  const templatesDir = getTemplatesDir()
+  const archetypePath = path.join(templatesDir, config.archetype)
+  const manifest = loadTemplateManifest(archetypePath)
 
-  // Process each template and collect all files
-  const allFiles = new Map<string, string>();
+  if (manifest?.baseCommand) {
+    generateFromBaseCommand(config, outputDir, manifest, context)
+  } else {
+    generateFromTemplates(config, outputDir, context)
+  }
+}
+
+function generateFromBaseCommand(
+  config: ProjectConfig,
+  outputDir: string,
+  manifest: ArchetypeManifest,
+  context: TemplateContext,
+): void {
+  const baseCommand = manifest.baseCommand
+  if (!baseCommand) return
+
+  const parentDir = path.dirname(outputDir)
+  const projectName = path.basename(outputDir)
+
+  const command = baseCommand.command
+    .replace(/\{\{projectName\}\}/g, projectName)
+    .replace(/\{\{parentDir\}\}/g, parentDir)
+
+  const workdir = baseCommand.workdir
+    .replace(/\{\{projectName\}\}/g, projectName)
+    .replace(/\{\{parentDir\}\}/g, parentDir)
+
+  if (!fs.existsSync(workdir)) {
+    fs.mkdirSync(workdir, { recursive: true })
+  }
+
+  console.log(`Running: ${command}`)
+  const result = spawnSync(command, {
+    cwd: workdir,
+    shell: true,
+    stdio: 'inherit',
+    env: { ...process.env, CI: 'true' },
+  })
+
+  if (result.status !== 0) {
+    throw new Error(`Base command failed with exit code ${result.status}`)
+  }
+
+  if (manifest.postProcess) {
+    runPostProcess(outputDir, manifest.postProcess)
+  }
+
+  applyOverlays(config, outputDir, context)
+  applyTemplateFiles(config, outputDir, context)
+  initGitRepo(outputDir)
+}
+
+function runPostProcess(
+  outputDir: string,
+  postProcess: NonNullable<ArchetypeManifest['postProcess']>,
+): void {
+  for (const file of postProcess.remove) {
+    const filePath = path.join(outputDir, file)
+    if (fs.existsSync(filePath)) {
+      fs.rmSync(filePath, { recursive: true })
+      console.log(`Removed: ${file}`)
+    }
+  }
+
+  const pkgPath = path.join(outputDir, 'package.json')
+  if (!fs.existsSync(pkgPath)) return
+
+  const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'))
+
+  for (const dep of postProcess.removeDeps) {
+    if (pkg.dependencies?.[dep]) {
+      delete pkg.dependencies[dep]
+      console.log(`Removed dependency: ${dep}`)
+    }
+    if (pkg.devDependencies?.[dep]) {
+      delete pkg.devDependencies[dep]
+      console.log(`Removed devDependency: ${dep}`)
+    }
+  }
+
+  for (const [name, version] of Object.entries(postProcess.addDeps)) {
+    pkg.dependencies = pkg.dependencies || {}
+    pkg.dependencies[name] = version
+    console.log(`Added dependency: ${name}@${version}`)
+  }
+
+  for (const [name, version] of Object.entries(postProcess.addDevDeps)) {
+    pkg.devDependencies = pkg.devDependencies || {}
+    pkg.devDependencies[name] = version
+    console.log(`Added devDependency: ${name}@${version}`)
+  }
+
+  for (const [name, script] of Object.entries(postProcess.updateScripts)) {
+    pkg.scripts = pkg.scripts || {}
+    pkg.scripts[name] = script
+    console.log(`Updated script: ${name}`)
+  }
+
+  fs.writeFileSync(pkgPath, `${JSON.stringify(pkg, null, 2)}\n`)
+}
+
+function applyOverlays(config: ProjectConfig, outputDir: string, context: TemplateContext): void {
+  const templatesDir = getTemplatesDir()
+  const archetypePath = path.join(templatesDir, config.archetype)
+  const overlaysPath = path.join(archetypePath, 'overlays')
+
+  if (!fs.existsSync(overlaysPath)) return
+
+  const files = processTemplateDirectory(overlaysPath, context)
+  for (const [filePath, content] of files) {
+    if (filePath === 'template.json') continue
+    const fullPath = path.join(outputDir, filePath)
+    const dir = path.dirname(fullPath)
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true })
+    }
+    fs.writeFileSync(fullPath, content)
+    console.log(`Applied overlay: ${filePath}`)
+  }
+}
+
+function applyTemplateFiles(
+  config: ProjectConfig,
+  outputDir: string,
+  context: TemplateContext,
+): void {
+  const templates = resolveTemplates(config.archetype, config.addons)
 
   for (const template of templates) {
-    const files = processTemplateDirectory(template.path, context);
+    if (template.manifest.name === config.archetype) continue
 
-    // Skip template.json files (manifest files)
+    const files = processTemplateDirectory(template.path, context)
+    for (const [filePath, content] of files) {
+      if (filePath === 'template.json') continue
+      const fullPath = path.join(outputDir, filePath)
+      const dir = path.dirname(fullPath)
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true })
+      }
+      fs.writeFileSync(fullPath, content)
+      console.log(`Applied template: ${filePath} (from ${template.manifest.name})`)
+    }
+  }
+}
+
+function generateFromTemplates(
+  config: ProjectConfig,
+  outputDir: string,
+  context: TemplateContext,
+): void {
+  const templates = resolveTemplates(config.archetype, config.addons)
+  const allFiles = new Map<string, string>()
+
+  for (const template of templates) {
+    const files = processTemplateDirectory(template.path, context)
     for (const [filePath, content] of files) {
       if (filePath !== 'template.json') {
-        allFiles.set(filePath, content);
+        allFiles.set(filePath, content)
       }
     }
   }
 
-  // Write all files to output directory
-  writeTemplates(allFiles, outputDir);
-
-  // Initialize git repository if not already initialized
-  initGitRepo(outputDir);
+  writeTemplates(allFiles, outputDir)
+  initGitRepo(outputDir)
 }
 
 /**
  * Initialize a git repository in the output directory
  */
 function initGitRepo(outputDir: string): void {
-  const gitDir = path.join(outputDir, '.git');
+  const gitDir = path.join(outputDir, '.git')
   if (!fs.existsSync(gitDir)) {
     try {
-      execSync('git init', { cwd: outputDir, stdio: 'ignore' });
+      execSync('git init', { cwd: outputDir, stdio: 'ignore' })
     } catch {
       // Git not available or failed - that's OK
     }
@@ -80,18 +227,18 @@ export function generateProjectLegacy(config: ProjectConfig, outputDir: string):
     apiFramework: config.apiFramework,
     webFramework: config.webFramework,
     addons: config.addons,
-  });
+  })
 
   // Check if template directory exists for the archetype
-  const templatesDir = getTemplatesDir();
-  const archetypePath = path.join(templatesDir, config.archetype);
+  const templatesDir = getTemplatesDir()
+  const archetypePath = path.join(templatesDir, config.archetype)
 
   if (fs.existsSync(archetypePath)) {
     // Use the new template system
-    generateProject(config, outputDir);
+    generateProject(config, outputDir)
   } else {
     // Fall back to inline generation for archetypes without templates yet
-    generateInlineProject(context, config, outputDir);
+    generateInlineProject(context, config, outputDir)
   }
 }
 
@@ -99,18 +246,18 @@ export function generateProjectLegacy(config: ProjectConfig, outputDir: string):
  * Helper to write a file, creating directories as needed
  */
 function writeFile(filePath: string, content: string): void {
-  const dir = path.dirname(filePath);
+  const dir = path.dirname(filePath)
   if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
+    fs.mkdirSync(dir, { recursive: true })
   }
-  fs.writeFileSync(filePath, content, 'utf-8');
+  fs.writeFileSync(filePath, content, 'utf-8')
 }
 
 /**
  * Helper to check if an addon is enabled
  */
 function hasAddon(config: ProjectConfig, addon: string): boolean {
-  return config.addons.includes(addon as ProjectConfig['addons'][number]);
+  return config.addons.includes(addon as ProjectConfig['addons'][number])
 }
 
 /**
@@ -119,7 +266,7 @@ function hasAddon(config: ProjectConfig, addon: string): boolean {
 function generateInlineProject(
   context: TemplateContext,
   config: ProjectConfig,
-  outputDir: string
+  outputDir: string,
 ): void {
   // Generate package.json
   const pkg = {
@@ -165,9 +312,9 @@ function generateInlineProject(
       typescript: '^5.0.0',
       '@tsconfig/strictest': '^2.0.0',
     },
-  };
+  }
 
-  writeFile(path.join(outputDir, 'package.json'), `${JSON.stringify(pkg, null, 2)}\n`);
+  writeFile(path.join(outputDir, 'package.json'), `${JSON.stringify(pkg, null, 2)}\n`)
 
   // Generate basic CLI
   const cliTs = `#!/usr/bin/env bun
@@ -214,9 +361,9 @@ async function main(): Promise<void> {
 }
 
 main();
-`;
+`
 
-  writeFile(path.join(outputDir, 'src', 'cli.ts'), cliTs);
+  writeFile(path.join(outputDir, 'src', 'cli.ts'), cliTs)
 
   // Generate tsconfig.json
   const tsconfig = {
@@ -232,9 +379,9 @@ main();
     },
     include: ['src/**/*.ts'],
     exclude: ['node_modules', 'dist'],
-  };
+  }
 
-  writeFile(path.join(outputDir, 'tsconfig.json'), `${JSON.stringify(tsconfig, null, 2)}\n`);
+  writeFile(path.join(outputDir, 'tsconfig.json'), `${JSON.stringify(tsconfig, null, 2)}\n`)
 
   // Generate README
   const readme = `# ${context.projectName}
@@ -256,18 +403,18 @@ bun run src/cli.ts --help
 ## License
 
 ${context.license}${context.author ? ` - ${context.author}` : ''}
-`;
+`
 
-  writeFile(path.join(outputDir, 'README.md'), readme);
+  writeFile(path.join(outputDir, 'README.md'), readme)
 
   // Generate .gitignore
   const gitignore = `node_modules/
 dist/
 *.log
 .DS_Store
-`;
+`
 
-  writeFile(path.join(outputDir, '.gitignore'), gitignore);
+  writeFile(path.join(outputDir, '.gitignore'), gitignore)
 
-  initGitRepo(outputDir);
+  initGitRepo(outputDir)
 }

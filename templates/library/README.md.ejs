@@ -1,0 +1,66 @@
+# <%= projectName %>
+
+<%= description %>
+
+## Installation
+
+```bash
+# bun
+bun add <%= projectName %>
+
+# npm
+npm install <%= projectName %>
+
+# pnpm
+pnpm add <%= projectName %>
+```
+
+## Usage
+
+```typescript
+import { hello, add } from '<%= projectName %>'
+
+console.log(hello('World')) // "Hello, World!"
+console.log(add(1, 2))      // 3
+```
+
+## API
+
+### `hello(name: string): string`
+
+Returns a greeting string.
+
+### `add(a: number, b: number): number`
+
+Adds two numbers and returns the result.
+
+## Development
+
+```bash
+# Install dependencies
+bun install
+
+# Run tests
+bun test
+
+# Build
+bun run build
+
+# Type check
+bun run typecheck
+
+# Lint
+bun run check
+```
+
+## Publishing
+
+```bash
+# Build and publish to npm
+bun run build
+npm publish
+```
+
+## License
+
+<%= license %><% if (author) { %> - <%= author %><% } %>

@@ -24,5 +24,4 @@ Thumbs.db
 bun.lockb
 
 # Binary builds
-cli-template-*
 !src/**

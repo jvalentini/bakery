@@ -13,4 +13,4 @@ export {
   internalQueryGeneric as internalQuery,
   mutationGeneric as mutation,
   queryGeneric as query,
-} from 'convex/server';
+} from 'convex/server'

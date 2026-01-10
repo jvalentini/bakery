@@ -1,6 +1,17 @@
-import * as fs from 'node:fs';
-import * as path from 'node:path';
-import { z } from 'zod';
+import * as fs from 'node:fs'
+import * as path from 'node:path'
+import { z } from 'zod'
+
+/**
+ * Schema for post-processing configuration
+ */
+const PostProcessSchema = z.object({
+  remove: z.array(z.string()).default([]),
+  removeDeps: z.array(z.string()).default([]),
+  addDeps: z.record(z.string(), z.string()).default({}),
+  addDevDeps: z.record(z.string(), z.string()).default({}),
+  updateScripts: z.record(z.string(), z.string()).default({}),
+})
 
 /**
  * Schema for archetype manifest (template.json)
@@ -26,7 +37,7 @@ export const ArchetypeManifestSchema = z.object({
         message: z.string(),
         default: z.unknown().optional(),
         options: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
-      })
+      }),
     )
     .default([]),
 
@@ -39,6 +50,20 @@ export const ArchetypeManifestSchema = z.object({
   // Files to exclude
   exclude: z.array(z.string()).default([]).describe('Glob patterns for files to exclude'),
 
+  // External base command (for templates that wrap external generators)
+  baseCommand: z
+    .object({
+      command: z
+        .string()
+        .describe('Command to run (supports {{projectName}}, {{parentDir}} placeholders)'),
+      workdir: z.string().default('{{parentDir}}').describe('Working directory for the command'),
+    })
+    .optional()
+    .describe('External command to generate base project (e.g., create-convex)'),
+
+  // Post-processing for baseCommand templates
+  postProcess: PostProcessSchema.optional().describe('Post-processing steps after base generation'),
+
   // Hooks
   hooks: z
     .object({
@@ -46,17 +71,17 @@ export const ArchetypeManifestSchema = z.object({
       afterGenerate: z.string().optional(),
     })
     .default({}),
-});
+})
 
-export type ArchetypeManifest = z.infer<typeof ArchetypeManifestSchema>;
+export type ArchetypeManifest = z.infer<typeof ArchetypeManifestSchema>
 
 /**
  * Loaded template with its manifest and path
  */
 export interface LoadedTemplate {
-  manifest: ArchetypeManifest;
-  path: string;
-  isPlugin: boolean;
+  manifest: ArchetypeManifest
+  path: string
+  isPlugin: boolean
 }
 
 /**
@@ -65,37 +90,37 @@ export interface LoadedTemplate {
 export function getTemplatesDir(): string {
   // In development, templates are at project root
   // In production (built), they would be bundled or at a known location
-  const devPath = path.resolve(import.meta.dirname, '../../templates');
+  const devPath = path.resolve(import.meta.dirname, '../../templates')
   if (fs.existsSync(devPath)) {
-    return devPath;
+    return devPath
   }
 
   // Fallback for production builds
-  const prodPath = path.resolve(import.meta.dirname, '../templates');
+  const prodPath = path.resolve(import.meta.dirname, '../templates')
   if (fs.existsSync(prodPath)) {
-    return prodPath;
+    return prodPath
   }
 
-  throw new Error('Templates directory not found');
+  throw new Error('Templates directory not found')
 }
 
 /**
  * Load a template manifest from a directory
  */
 export function loadTemplateManifest(templateDir: string): ArchetypeManifest | null {
-  const manifestPath = path.join(templateDir, 'template.json');
+  const manifestPath = path.join(templateDir, 'template.json')
 
   if (!fs.existsSync(manifestPath)) {
-    return null;
+    return null
   }
 
   try {
-    const content = fs.readFileSync(manifestPath, 'utf-8');
-    const json = JSON.parse(content);
-    return ArchetypeManifestSchema.parse(json);
+    const content = fs.readFileSync(manifestPath, 'utf-8')
+    const json = JSON.parse(content)
+    return ArchetypeManifestSchema.parse(json)
   } catch (error) {
-    console.error(`Failed to load manifest from ${manifestPath}:`, error);
-    return null;
+    console.error(`Failed to load manifest from ${manifestPath}:`, error)
+    return null
   }
 }
 
@@ -103,61 +128,61 @@ export function loadTemplateManifest(templateDir: string): ArchetypeManifest | n
  * Discover all available archetypes
  */
 export function discoverArchetypes(): LoadedTemplate[] {
-  const templatesDir = getTemplatesDir();
-  const archetypes: LoadedTemplate[] = [];
+  const templatesDir = getTemplatesDir()
+  const archetypes: LoadedTemplate[] = []
 
-  const archetypeDirs = ['cli', 'api', 'full-stack', 'effect-cli', 'effect-full-stack'];
+  const archetypeDirs = ['cli', 'library', 'api', 'full-stack', 'convex-full-stack']
   for (const dir of archetypeDirs) {
-    const dirPath = path.join(templatesDir, dir);
+    const dirPath = path.join(templatesDir, dir)
     if (fs.existsSync(dirPath)) {
-      const manifest = loadTemplateManifest(dirPath);
+      const manifest = loadTemplateManifest(dirPath)
       if (manifest) {
-        archetypes.push({ manifest, path: dirPath, isPlugin: false });
+        archetypes.push({ manifest, path: dirPath, isPlugin: false })
       }
     }
   }
 
-  return archetypes;
+  return archetypes
 }
 
 /**
  * Discover all available addons
  */
 export function discoverAddons(): LoadedTemplate[] {
-  const templatesDir = getTemplatesDir();
-  const addonsDir = path.join(templatesDir, 'addons');
-  const addons: LoadedTemplate[] = [];
+  const templatesDir = getTemplatesDir()
+  const addonsDir = path.join(templatesDir, 'addons')
+  const addons: LoadedTemplate[] = []
 
   if (!fs.existsSync(addonsDir)) {
-    return addons;
+    return addons
   }
 
-  const entries = fs.readdirSync(addonsDir, { withFileTypes: true });
+  const entries = fs.readdirSync(addonsDir, { withFileTypes: true })
   for (const entry of entries) {
     if (entry.isDirectory()) {
-      const addonPath = path.join(addonsDir, entry.name);
-      const manifest = loadTemplateManifest(addonPath);
+      const addonPath = path.join(addonsDir, entry.name)
+      const manifest = loadTemplateManifest(addonPath)
       if (manifest) {
-        addons.push({ manifest, path: addonPath, isPlugin: false });
+        addons.push({ manifest, path: addonPath, isPlugin: false })
       }
     }
   }
 
-  return addons;
+  return addons
 }
 
 /**
  * Load core template (shared across all archetypes)
  */
 export function loadCoreTemplate(): LoadedTemplate | null {
-  const templatesDir = getTemplatesDir();
-  const corePath = path.join(templatesDir, 'core');
+  const templatesDir = getTemplatesDir()
+  const corePath = path.join(templatesDir, 'core')
 
   if (!fs.existsSync(corePath)) {
-    return null;
+    return null
   }
 
-  const manifest = loadTemplateManifest(corePath);
+  const manifest = loadTemplateManifest(corePath)
   if (!manifest) {
     // Create a default manifest for core if none exists
     return {
@@ -173,10 +198,10 @@ export function loadCoreTemplate(): LoadedTemplate | null {
       },
       path: corePath,
       isPlugin: false,
-    };
+    }
   }
 
-  return { manifest, path: corePath, isPlugin: false };
+  return { manifest, path: corePath, isPlugin: false }
 }
 
 /**
@@ -184,42 +209,44 @@ export function loadCoreTemplate(): LoadedTemplate | null {
  */
 export function resolveTemplates(
   archetypeName: string,
-  selectedAddons: string[]
+  selectedAddons: string[],
 ): LoadedTemplate[] {
-  const templates: LoadedTemplate[] = [];
-  const templatesDir = getTemplatesDir();
+  const templates: LoadedTemplate[] = []
+  const templatesDir = getTemplatesDir()
+  const seen = new Set<string>()
 
-  // Always include core
-  const core = loadCoreTemplate();
+  const core = loadCoreTemplate()
   if (core) {
-    templates.push(core);
+    templates.push(core)
+    seen.add('core')
   }
 
-  // Load the archetype
-  const archetypes = discoverArchetypes();
-  const archetype = archetypes.find((a) => a.manifest.name === archetypeName);
+  const archetypes = discoverArchetypes()
+  const archetype = archetypes.find((a) => a.manifest.name === archetypeName)
   if (archetype) {
-    // Resolve archetype dependencies first
     for (const dep of archetype.manifest.dependencies) {
-      const depPath = path.join(templatesDir, dep);
+      if (seen.has(dep)) continue
+      const depPath = path.join(templatesDir, dep)
       if (fs.existsSync(depPath)) {
-        const depManifest = loadTemplateManifest(depPath);
+        const depManifest = loadTemplateManifest(depPath)
         if (depManifest) {
-          templates.push({ manifest: depManifest, path: depPath, isPlugin: false });
+          templates.push({ manifest: depManifest, path: depPath, isPlugin: false })
+          seen.add(dep)
         }
       }
     }
-    templates.push(archetype);
+    templates.push(archetype)
+    seen.add(archetypeName)
   }
 
   // Load selected addons
-  const allAddons = discoverAddons();
+  const allAddons = discoverAddons()
   for (const addonName of selectedAddons ?? []) {
-    const addon = allAddons.find((a) => a.manifest.name === addonName);
+    const addon = allAddons.find((a) => a.manifest.name === addonName)
     if (addon) {
-      templates.push(addon);
+      templates.push(addon)
     }
   }
 
-  return templates;
+  return templates
 }

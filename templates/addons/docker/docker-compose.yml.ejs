@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: <%= projectName %>
-<% if (archetype === 'api' || archetype === 'full-stack' || archetype === 'effect-cli' || archetype === 'effect-full-stack') { -%>
+<% if (archetype === 'api' || archetype === 'full-stack' || archetype === 'convex-full-stack') { -%>
     ports:
       - "3000:3000"
     environment:
@@ -29,7 +29,7 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
-<% if (archetype === 'api' || archetype === 'full-stack' || archetype === 'effect-cli' || archetype === 'effect-full-stack') { -%>
+<% if (archetype === 'api' || archetype === 'full-stack' || archetype === 'convex-full-stack') { -%>
     ports:
       - "3000:3000"
     environment:

@@ -1,9 +1,0 @@
-{
-  "name": "effect-cli",
-  "displayName": "Effect CLI/API",
-  "description": "CLI or API using Effect-ts functional patterns",
-  "version": "1.0.0",
-  "dependencies": ["core"],
-  "prompts": [],
-  "exclude": []
-}

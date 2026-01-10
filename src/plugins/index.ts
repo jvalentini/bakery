@@ -50,7 +50,7 @@ export {
   PluginManifestSchema,
   // Registry
   pluginRegistry,
-} from './loader.js';
+} from './loader.js'
 // Core plugin types
 // Context types
 // Hook types
@@ -68,6 +68,6 @@ export type {
   PluginRegistry,
   PluginTemplateUtils,
   ProjectConfig,
-} from './types.js';
+} from './types.js'
 // Type guards
-export { isBakeryPlugin, isPluginManifest } from './types.js';
+export { isBakeryPlugin, isPluginManifest } from './types.js'

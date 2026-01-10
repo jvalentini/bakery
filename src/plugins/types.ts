@@ -25,8 +25,8 @@
  * @module
  */
 
-import type { TemplateContext } from '../templates/engine.js';
-import type { LoadedTemplate } from '../templates/loader.js';
+import type { TemplateContext } from '../templates/engine.js'
+import type { LoadedTemplate } from '../templates/loader.js'
 
 // =============================================================================
 // Plugin Manifest
@@ -40,53 +40,53 @@ import type { LoadedTemplate } from '../templates/loader.js';
  */
 export interface PluginManifest {
   /** Unique identifier for the plugin (e.g., "bakery-plugin-tailwind") */
-  name: string;
+  name: string
 
   /** Human-readable name shown in UI (e.g., "Tailwind CSS Plugin") */
-  displayName: string;
+  displayName: string
 
   /** Brief description of what the plugin provides */
-  description: string;
+  description: string
 
   /** Semantic version (e.g., "1.0.0") */
-  version: string;
+  version: string
 
   /** Plugin author name or organization */
-  author?: string;
+  author?: string
 
   /** URL to plugin repository or homepage */
-  homepage?: string;
+  homepage?: string
 
   /** Minimum Bakery version required (e.g., ">=1.0.0") */
-  bakeryVersion?: string;
+  bakeryVersion?: string
 
   /**
    * Paths to template directories provided by this plugin
    * Relative to the plugin root directory
    */
-  templates?: string[];
+  templates?: string[]
 
   /**
    * Archetype definitions provided by this plugin
    * Each entry is a path to a directory with a template.json
    */
-  archetypes?: string[];
+  archetypes?: string[]
 
   /**
    * Addon definitions provided by this plugin
    * Each entry is a path to a directory with a template.json
    */
-  addons?: string[];
+  addons?: string[]
 
   /**
    * Keywords for plugin discovery/search
    */
-  keywords?: string[];
+  keywords?: string[]
 
   /**
    * Plugin dependencies (other plugins that must be loaded first)
    */
-  dependencies?: string[];
+  dependencies?: string[]
 }
 
 // =============================================================================
@@ -98,34 +98,34 @@ export interface PluginManifest {
  */
 export interface ProjectConfig {
   /** Project name in kebab-case */
-  projectName: string;
+  projectName: string
 
   /** Project description */
-  description: string;
+  description: string
 
   /** Author name */
-  author: string;
+  author: string
 
   /** License identifier */
-  license: string;
+  license: string
 
   /** GitHub username */
-  githubUsername: string;
+  githubUsername: string
 
   /** Selected archetype */
-  archetype: string;
+  archetype: string
 
   /** Selected API framework (if applicable) */
-  apiFramework?: string;
+  apiFramework?: string
 
   /** Selected web framework (if applicable) */
-  webFramework?: string;
+  webFramework?: string
 
   /** Selected addons */
-  addons: string[];
+  addons: string[]
 
   /** Custom options from plugin prompts */
-  customOptions?: Record<string, unknown>;
+  customOptions?: Record<string, unknown>
 }
 
 /**
@@ -133,16 +133,16 @@ export interface ProjectConfig {
  */
 export interface PluginLogger {
   /** Log an info message */
-  info(message: string): void;
+  info(message: string): void
 
   /** Log a warning message */
-  warn(message: string): void;
+  warn(message: string): void
 
   /** Log an error message */
-  error(message: string): void;
+  error(message: string): void
 
   /** Log a debug message (only shown in verbose mode) */
-  debug(message: string): void;
+  debug(message: string): void
 }
 
 /**
@@ -150,22 +150,22 @@ export interface PluginLogger {
  */
 export interface PluginFileSystem {
   /** Check if a file or directory exists */
-  exists(filePath: string): boolean;
+  exists(filePath: string): boolean
 
   /** Read a file as UTF-8 string */
-  readFile(filePath: string): string;
+  readFile(filePath: string): string
 
   /** Write content to a file (creates directories as needed) */
-  writeFile(filePath: string, content: string): void;
+  writeFile(filePath: string, content: string): void
 
   /** Copy a file or directory */
-  copy(src: string, dest: string): void;
+  copy(src: string, dest: string): void
 
   /** List files in a directory */
-  readDir(dirPath: string): string[];
+  readDir(dirPath: string): string[]
 
   /** Create a directory (recursive) */
-  mkdir(dirPath: string): void;
+  mkdir(dirPath: string): void
 }
 
 /**
@@ -173,13 +173,13 @@ export interface PluginFileSystem {
  */
 export interface PluginTemplateUtils {
   /** Render an EJS template string with the current context */
-  render(template: string, additionalData?: Record<string, unknown>): string;
+  render(template: string, additionalData?: Record<string, unknown>): string
 
   /** Render an EJS template file with the current context */
-  renderFile(templatePath: string, additionalData?: Record<string, unknown>): string;
+  renderFile(templatePath: string, additionalData?: Record<string, unknown>): string
 
   /** Get the current template context */
-  getContext(): TemplateContext;
+  getContext(): TemplateContext
 }
 
 /**
@@ -194,31 +194,31 @@ export interface PluginTemplateUtils {
  */
 export interface PluginContext {
   /** Project configuration from the wizard */
-  config: ProjectConfig;
+  config: ProjectConfig
 
   /** Output directory where the project is being generated */
-  outputDir: string;
+  outputDir: string
 
   /** Template context for rendering */
-  templateContext: TemplateContext;
+  templateContext: TemplateContext
 
   /** All templates being used (in resolution order) */
-  templates: LoadedTemplate[];
+  templates: LoadedTemplate[]
 
   /** Logger for plugin output */
-  logger: PluginLogger;
+  logger: PluginLogger
 
   /** File system utilities */
-  fs: PluginFileSystem;
+  fs: PluginFileSystem
 
   /** Template rendering utilities */
-  template: PluginTemplateUtils;
+  template: PluginTemplateUtils
 
   /** Get a value from the generation state (for plugin communication) */
-  getState<T>(key: string): T | undefined;
+  getState<T>(key: string): T | undefined
 
   /** Set a value in the generation state (for plugin communication) */
-  setState<T>(key: string, value: T): void;
+  setState<T>(key: string, value: T): void
 }
 
 // =============================================================================
@@ -230,13 +230,13 @@ export interface PluginContext {
  */
 export interface BeforeGenerateResult {
   /** If true, skip default generation (plugin handles everything) */
-  skipGeneration?: boolean;
+  skipGeneration?: boolean
 
   /** Additional templates to include in generation */
-  additionalTemplates?: LoadedTemplate[];
+  additionalTemplates?: LoadedTemplate[]
 
   /** Modified project config (merged with existing) */
-  configOverrides?: Partial<ProjectConfig>;
+  configOverrides?: Partial<ProjectConfig>
 }
 
 /**
@@ -244,22 +244,22 @@ export interface BeforeGenerateResult {
  */
 export interface AfterGenerateResult {
   /** Additional files to write (path -> content) */
-  additionalFiles?: Map<string, string>;
+  additionalFiles?: Map<string, string>
 
   /** Files to remove from output */
-  removeFiles?: string[];
+  removeFiles?: string[]
 
   /** Post-generation commands to run */
   commands?: Array<{
     /** Command to run */
-    command: string;
+    command: string
     /** Arguments */
-    args?: string[];
+    args?: string[]
     /** Working directory (relative to output) */
-    cwd?: string;
+    cwd?: string
     /** Description shown to user */
-    description?: string;
-  }>;
+    description?: string
+  }>
 }
 
 /**
@@ -296,8 +296,8 @@ export interface PluginHooks {
    * ```
    */
   beforeGenerate?(
-    context: PluginContext
-  ): Promise<BeforeGenerateResult | undefined> | BeforeGenerateResult | undefined;
+    context: PluginContext,
+  ): Promise<BeforeGenerateResult | undefined> | BeforeGenerateResult | undefined
 
   /**
    * Called after generation completes successfully
@@ -318,8 +318,8 @@ export interface PluginHooks {
    * ```
    */
   afterGenerate?(
-    context: PluginContext
-  ): Promise<AfterGenerateResult | undefined> | AfterGenerateResult | undefined;
+    context: PluginContext,
+  ): Promise<AfterGenerateResult | undefined> | AfterGenerateResult | undefined
 
   /**
    * Called if an error occurs during generation
@@ -335,7 +335,7 @@ export interface PluginHooks {
    * }
    * ```
    */
-  onError?(error: Error, context: Partial<PluginContext>): Promise<void> | void;
+  onError?(error: Error, context: Partial<PluginContext>): Promise<void> | void
 }
 
 // =============================================================================
@@ -347,25 +347,25 @@ export interface PluginHooks {
  */
 export interface PluginPrompt {
   /** Unique identifier for this prompt */
-  name: string;
+  name: string
 
   /** Prompt type */
-  type: 'text' | 'select' | 'multiselect' | 'confirm';
+  type: 'text' | 'select' | 'multiselect' | 'confirm'
 
   /** Message shown to user */
-  message: string;
+  message: string
 
   /** Default value */
-  default?: unknown;
+  default?: unknown
 
   /** Options for select/multiselect */
-  options?: Array<{ value: string; label: string }>;
+  options?: Array<{ value: string; label: string }>
 
   /** When to show this prompt (returns true to show) */
-  when?: (config: ProjectConfig) => boolean;
+  when?: (config: ProjectConfig) => boolean
 
   /** Validation function */
-  validate?: (value: unknown) => string | true;
+  validate?: (value: unknown) => string | true
 }
 
 /**
@@ -421,33 +421,33 @@ export interface PluginPrompt {
  */
 export interface BakeryPlugin {
   /** Unique identifier for the plugin (should match package name) */
-  name: string;
+  name: string
 
   /** Semantic version */
-  version: string;
+  version: string
 
   /** Human-readable display name */
-  displayName?: string;
+  displayName?: string
 
   /** Brief description */
-  description?: string;
+  description?: string
 
   /**
    * Paths to template directories (relative to plugin root)
    * Each directory should contain a template.json manifest
    */
-  templates?: string[];
+  templates?: string[]
 
   /**
    * Custom prompts to add to the wizard
    * These are shown after the default prompts
    */
-  prompts?: PluginPrompt[];
+  prompts?: PluginPrompt[]
 
   /**
    * Lifecycle hooks
    */
-  hooks?: PluginHooks;
+  hooks?: PluginHooks
 
   /**
    * Initialize the plugin (called once when plugin is loaded)
@@ -455,12 +455,12 @@ export interface BakeryPlugin {
    * @param pluginDir - Directory where the plugin is located
    * @returns Plugin manifest or void if using inline definition
    */
-  init?(pluginDir: string): Promise<PluginManifest | undefined> | PluginManifest | undefined;
+  init?(pluginDir: string): Promise<PluginManifest | undefined> | PluginManifest | undefined
 
   /**
    * Cleanup when plugin is unloaded
    */
-  destroy?(): Promise<void> | void;
+  destroy?(): Promise<void> | void
 }
 
 // =============================================================================
@@ -472,19 +472,19 @@ export interface BakeryPlugin {
  */
 export interface LoadedPlugin {
   /** The plugin definition */
-  plugin: BakeryPlugin;
+  plugin: BakeryPlugin
 
   /** Directory where the plugin is located */
-  pluginDir: string;
+  pluginDir: string
 
   /** Resolved manifest (from plugin.json or init()) */
-  manifest: PluginManifest;
+  manifest: PluginManifest
 
   /** Templates provided by this plugin */
-  templates: LoadedTemplate[];
+  templates: LoadedTemplate[]
 
   /** Whether the plugin is currently active */
-  active: boolean;
+  active: boolean
 }
 
 // =============================================================================
@@ -496,22 +496,22 @@ export interface LoadedPlugin {
  */
 export interface PluginRegistry {
   /** Discover plugins in standard locations */
-  discover(): Promise<LoadedPlugin[]>;
+  discover(): Promise<LoadedPlugin[]>
 
   /** Load a plugin from a directory */
-  load(pluginDir: string): Promise<LoadedPlugin>;
+  load(pluginDir: string): Promise<LoadedPlugin>
 
   /** Load a plugin from an npm package */
-  loadPackage(packageName: string): Promise<LoadedPlugin>;
+  loadPackage(packageName: string): Promise<LoadedPlugin>
 
   /** Get all loaded plugins */
-  getPlugins(): LoadedPlugin[];
+  getPlugins(): LoadedPlugin[]
 
   /** Get a plugin by name */
-  getPlugin(name: string): LoadedPlugin | undefined;
+  getPlugin(name: string): LoadedPlugin | undefined
 
   /** Unload a plugin */
-  unload(name: string): Promise<void>;
+  unload(name: string): Promise<void>
 }
 
 // =============================================================================
@@ -522,21 +522,21 @@ export interface PluginRegistry {
  * Check if an object is a valid BakeryPlugin
  */
 export function isBakeryPlugin(obj: unknown): obj is BakeryPlugin {
-  if (typeof obj !== 'object' || obj === null) return false;
-  const plugin = obj as Record<string, unknown>;
-  return typeof plugin['name'] === 'string' && typeof plugin['version'] === 'string';
+  if (typeof obj !== 'object' || obj === null) return false
+  const plugin = obj as Record<string, unknown>
+  return typeof plugin['name'] === 'string' && typeof plugin['version'] === 'string'
 }
 
 /**
  * Check if an object is a valid PluginManifest
  */
 export function isPluginManifest(obj: unknown): obj is PluginManifest {
-  if (typeof obj !== 'object' || obj === null) return false;
-  const manifest = obj as Record<string, unknown>;
+  if (typeof obj !== 'object' || obj === null) return false
+  const manifest = obj as Record<string, unknown>
   return (
     typeof manifest['name'] === 'string' &&
     typeof manifest['displayName'] === 'string' &&
     typeof manifest['description'] === 'string' &&
     typeof manifest['version'] === 'string'
-  );
+  )
 }

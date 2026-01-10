@@ -1,9 +1,0 @@
-{
-  "projectName": "my-effect-cli",
-  "description": "A CLI tool built with Effect-ts",
-  "author": "Test Author",
-  "license": "MIT",
-  "githubUsername": "testuser",
-  "archetype": "effect-cli",
-  "addons": ["docker", "ci"]
-}

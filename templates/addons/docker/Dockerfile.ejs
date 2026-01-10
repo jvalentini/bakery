@@ -31,7 +31,7 @@ RUN addgroup --system --gid 1001 app && \
 USER app
 
 ENTRYPOINT ["bun", "run", "dist/cli.js"]
-<% } else if (archetype === 'api' || archetype === 'full-stack' || archetype === 'effect-cli' || archetype === 'effect-full-stack') { -%>
+<% } else if (archetype === 'api' || archetype === 'full-stack' || archetype === 'convex-full-stack') { -%>
 # Build stage
 FROM oven/bun:1 AS builder
 

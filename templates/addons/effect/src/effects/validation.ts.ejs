@@ -1,0 +1,44 @@
+/**
+ * Effect-ts Validation Example
+ *
+ * Demonstrates type-safe validation using Effect Schema.
+ * Customize this file for your domain-specific validation needs.
+ */
+
+import { Effect, Schema } from 'effect';
+
+export const ItemSchema = Schema.Struct({
+  id: Schema.String,
+  name: Schema.String.pipe(Schema.minLength(1), Schema.maxLength(100)),
+  createdAt: Schema.Number,
+});
+
+export const CreateItemSchema = Schema.Struct({
+  name: Schema.String.pipe(Schema.minLength(1), Schema.maxLength(100)),
+});
+
+export type Item = Schema.Schema.Type<typeof ItemSchema>;
+export type CreateItem = Schema.Schema.Type<typeof CreateItemSchema>;
+
+export class ValidationError {
+  readonly _tag = 'ValidationError';
+  constructor(readonly message: string) {}
+}
+
+export const validateItem = (input: unknown): Effect.Effect<Item, ValidationError> =>
+  Effect.gen(function* () {
+    const result = Schema.decodeUnknownEither(ItemSchema)(input);
+    if (result._tag === 'Left') {
+      return yield* Effect.fail(new ValidationError('Invalid item format'));
+    }
+    return result.right;
+  });
+
+export const validateCreateItem = (input: unknown): Effect.Effect<CreateItem, ValidationError> =>
+  Effect.gen(function* () {
+    const result = Schema.decodeUnknownEither(CreateItemSchema)(input);
+    if (result._tag === 'Left') {
+      return yield* Effect.fail(new ValidationError('Invalid item data'));
+    }
+    return result.right;
+  });

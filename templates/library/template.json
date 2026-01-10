@@ -1,0 +1,9 @@
+{
+  "name": "library",
+  "displayName": "Library",
+  "description": "Reusable npm/bun package with TypeScript, dual ESM/CJS builds, and publishing setup",
+  "version": "1.0.0",
+  "dependencies": ["core"],
+  "prompts": [],
+  "exclude": []
+}

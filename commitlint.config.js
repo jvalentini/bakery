@@ -3,4 +3,4 @@ export default {
   rules: {
     'scope-empty': [0, 'never'],
   },
-};
+}

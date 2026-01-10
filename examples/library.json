@@ -1,0 +1,9 @@
+{
+  "projectName": "my-lib",
+  "description": "A reusable TypeScript library",
+  "author": "Test Author",
+  "license": "MIT",
+  "githubUsername": "testuser",
+  "archetype": "library",
+  "addons": ["docs"]
+}

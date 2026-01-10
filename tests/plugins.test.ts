@@ -1,7 +1,7 @@
 /**
  * Tests for plugin system types
  */
-import { describe, expect, it } from 'bun:test';
+import { describe, expect, it } from 'bun:test'
 import {
   type AfterGenerateResult,
   type BakeryPlugin,
@@ -10,7 +10,7 @@ import {
   isPluginManifest,
   type PluginHooks,
   type PluginManifest,
-} from '../src/plugins/index.js';
+} from '../src/plugins/index.js'
 
 describe('Plugin Type Guards', () => {
   describe('isBakeryPlugin', () => {
@@ -18,9 +18,9 @@ describe('Plugin Type Guards', () => {
       const plugin: BakeryPlugin = {
         name: 'test-plugin',
         version: '1.0.0',
-      };
-      expect(isBakeryPlugin(plugin)).toBe(true);
-    });
+      }
+      expect(isBakeryPlugin(plugin)).toBe(true)
+    })
 
     it('should return true for plugin with all fields', () => {
       const plugin: BakeryPlugin = {
@@ -44,34 +44,34 @@ describe('Plugin Type Guards', () => {
           beforeGenerate: async () => {},
           afterGenerate: async () => {},
         },
-      };
-      expect(isBakeryPlugin(plugin)).toBe(true);
-    });
+      }
+      expect(isBakeryPlugin(plugin)).toBe(true)
+    })
 
     it('should return false for null', () => {
-      expect(isBakeryPlugin(null)).toBe(false);
-    });
+      expect(isBakeryPlugin(null)).toBe(false)
+    })
 
     it('should return false for undefined', () => {
-      expect(isBakeryPlugin(undefined)).toBe(false);
-    });
+      expect(isBakeryPlugin(undefined)).toBe(false)
+    })
 
     it('should return false for object without name', () => {
-      expect(isBakeryPlugin({ version: '1.0.0' })).toBe(false);
-    });
+      expect(isBakeryPlugin({ version: '1.0.0' })).toBe(false)
+    })
 
     it('should return false for object without version', () => {
-      expect(isBakeryPlugin({ name: 'test' })).toBe(false);
-    });
+      expect(isBakeryPlugin({ name: 'test' })).toBe(false)
+    })
 
     it('should return false for non-string name', () => {
-      expect(isBakeryPlugin({ name: 123, version: '1.0.0' })).toBe(false);
-    });
+      expect(isBakeryPlugin({ name: 123, version: '1.0.0' })).toBe(false)
+    })
 
     it('should return false for non-string version', () => {
-      expect(isBakeryPlugin({ name: 'test', version: 1 })).toBe(false);
-    });
-  });
+      expect(isBakeryPlugin({ name: 'test', version: 1 })).toBe(false)
+    })
+  })
 
   describe('isPluginManifest', () => {
     it('should return true for valid manifest', () => {
@@ -80,9 +80,9 @@ describe('Plugin Type Guards', () => {
         displayName: 'Test Plugin',
         description: 'A test plugin',
         version: '1.0.0',
-      };
-      expect(isPluginManifest(manifest)).toBe(true);
-    });
+      }
+      expect(isPluginManifest(manifest)).toBe(true)
+    })
 
     it('should return true for manifest with all fields', () => {
       const manifest: PluginManifest = {
@@ -98,23 +98,23 @@ describe('Plugin Type Guards', () => {
         addons: ['./addons/custom-addon'],
         keywords: ['bakery', 'plugin', 'test'],
         dependencies: ['other-plugin'],
-      };
-      expect(isPluginManifest(manifest)).toBe(true);
-    });
+      }
+      expect(isPluginManifest(manifest)).toBe(true)
+    })
 
     it('should return false for null', () => {
-      expect(isPluginManifest(null)).toBe(false);
-    });
+      expect(isPluginManifest(null)).toBe(false)
+    })
 
     it('should return false for missing required fields', () => {
-      expect(isPluginManifest({ name: 'test' })).toBe(false);
-      expect(isPluginManifest({ name: 'test', displayName: 'Test' })).toBe(false);
+      expect(isPluginManifest({ name: 'test' })).toBe(false)
+      expect(isPluginManifest({ name: 'test', displayName: 'Test' })).toBe(false)
       expect(isPluginManifest({ name: 'test', displayName: 'Test', description: 'Desc' })).toBe(
-        false
-      );
-    });
-  });
-});
+        false,
+      )
+    })
+  })
+})
 
 describe('Plugin Types', () => {
   describe('BakeryPlugin', () => {
@@ -122,37 +122,37 @@ describe('Plugin Types', () => {
       const plugin: BakeryPlugin = {
         name: 'minimal-plugin',
         version: '1.0.0',
-      };
-      expect(plugin.name).toBe('minimal-plugin');
-      expect(plugin.version).toBe('1.0.0');
-    });
+      }
+      expect(plugin.name).toBe('minimal-plugin')
+      expect(plugin.version).toBe('1.0.0')
+    })
 
     it('should allow plugin with hooks', () => {
       const hooks: PluginHooks = {
         beforeGenerate: async (_ctx) => {
-          return { skipGeneration: false };
+          return { skipGeneration: false }
         },
         afterGenerate: async (_ctx) => {
           return {
             additionalFiles: new Map([['extra.txt', 'content']]),
-          };
+          }
         },
         onError: async (_error, _ctx) => {
           // Handle error
         },
-      };
+      }
 
       const plugin: BakeryPlugin = {
         name: 'hooks-plugin',
         version: '1.0.0',
         hooks,
-      };
+      }
 
-      expect(plugin.hooks).toBeDefined();
-      expect(plugin.hooks?.beforeGenerate).toBeDefined();
-      expect(plugin.hooks?.afterGenerate).toBeDefined();
-      expect(plugin.hooks?.onError).toBeDefined();
-    });
+      expect(plugin.hooks).toBeDefined()
+      expect(plugin.hooks?.beforeGenerate).toBeDefined()
+      expect(plugin.hooks?.afterGenerate).toBeDefined()
+      expect(plugin.hooks?.onError).toBeDefined()
+    })
 
     it('should allow plugin with prompts', () => {
       const plugin: BakeryPlugin = {
@@ -179,21 +179,21 @@ describe('Plugin Types', () => {
             default: true,
           },
         ],
-      };
+      }
 
-      expect(plugin.prompts).toHaveLength(2);
-      expect(plugin.prompts?.[0]?.name).toBe('databaseType');
-      expect(plugin.prompts?.[1]?.type).toBe('confirm');
-    });
-  });
+      expect(plugin.prompts).toHaveLength(2)
+      expect(plugin.prompts?.[0]?.name).toBe('databaseType')
+      expect(plugin.prompts?.[1]?.type).toBe('confirm')
+    })
+  })
 
   describe('BeforeGenerateResult', () => {
     it('should allow skip generation', () => {
       const result: BeforeGenerateResult = {
         skipGeneration: true,
-      };
-      expect(result.skipGeneration).toBe(true);
-    });
+      }
+      expect(result.skipGeneration).toBe(true)
+    })
 
     it('should allow config overrides', () => {
       const result: BeforeGenerateResult = {
@@ -201,10 +201,10 @@ describe('Plugin Types', () => {
           addons: ['extra-addon'],
           customOptions: { myOption: 'value' },
         },
-      };
-      expect(result.configOverrides?.addons).toContain('extra-addon');
-    });
-  });
+      }
+      expect(result.configOverrides?.addons).toContain('extra-addon')
+    })
+  })
 
   describe('AfterGenerateResult', () => {
     it('should allow additional files', () => {
@@ -213,9 +213,9 @@ describe('Plugin Types', () => {
           ['README.md', '# Updated README'],
           ['.env.example', 'DB_HOST=localhost'],
         ]),
-      };
-      expect(result.additionalFiles?.size).toBe(2);
-    });
+      }
+      expect(result.additionalFiles?.size).toBe(2)
+    })
 
     it('should allow commands', () => {
       const result: AfterGenerateResult = {
@@ -232,19 +232,19 @@ describe('Plugin Types', () => {
             description: 'Running setup script',
           },
         ],
-      };
-      expect(result.commands).toHaveLength(2);
-      expect(result.commands?.[0]?.command).toBe('bun');
-    });
+      }
+      expect(result.commands).toHaveLength(2)
+      expect(result.commands?.[0]?.command).toBe('bun')
+    })
 
     it('should allow file removal', () => {
       const result: AfterGenerateResult = {
         removeFiles: ['unwanted.txt', 'temp/'],
-      };
-      expect(result.removeFiles).toContain('unwanted.txt');
-    });
-  });
-});
+      }
+      expect(result.removeFiles).toContain('unwanted.txt')
+    })
+  })
+})
 
 describe('PluginManifest', () => {
   it('should support all optional fields', () => {
@@ -261,13 +261,13 @@ describe('PluginManifest', () => {
       addons: ['./addons/custom-addon'],
       keywords: ['bakery', 'plugin', 'complete'],
       dependencies: ['base-plugin'],
-    };
+    }
 
-    expect(manifest.name).toBe('complete-plugin');
-    expect(manifest.author).toBe('Plugin Author');
-    expect(manifest.templates).toHaveLength(1);
-    expect(manifest.archetypes).toHaveLength(1);
-    expect(manifest.addons).toHaveLength(1);
-    expect(manifest.dependencies).toHaveLength(1);
-  });
-});
+    expect(manifest.name).toBe('complete-plugin')
+    expect(manifest.author).toBe('Plugin Author')
+    expect(manifest.templates).toHaveLength(1)
+    expect(manifest.archetypes).toHaveLength(1)
+    expect(manifest.addons).toHaveLength(1)
+    expect(manifest.dependencies).toHaveLength(1)
+  })
+})

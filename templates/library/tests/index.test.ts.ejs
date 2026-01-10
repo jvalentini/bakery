@@ -1,0 +1,30 @@
+import { describe, expect, it } from 'bun:test'
+import { add, hello, VERSION } from '../src/index'
+
+describe('<%= projectName %>', () => {
+  describe('hello', () => {
+    it('should greet with name', () => {
+      expect(hello('World')).toBe('Hello, World!')
+    })
+
+    it('should handle empty name', () => {
+      expect(hello('')).toBe('Hello, !')
+    })
+  })
+
+  describe('add', () => {
+    it('should add two numbers', () => {
+      expect(add(1, 2)).toBe(3)
+    })
+
+    it('should handle negative numbers', () => {
+      expect(add(-1, 1)).toBe(0)
+    })
+  })
+
+  describe('VERSION', () => {
+    it('should be defined', () => {
+      expect(VERSION).toBe('0.1.0')
+    })
+  })
+})

@@ -9,7 +9,7 @@ export {
   toKebabCase,
   toPascalCase,
   writeTemplates,
-} from './engine.js';
+} from './engine.js'
 
 export {
   type ArchetypeManifest,
@@ -21,4 +21,4 @@ export {
   loadCoreTemplate,
   loadTemplateManifest,
   resolveTemplates,
-} from './loader.js';
+} from './loader.js'

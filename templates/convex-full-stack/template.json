@@ -1,0 +1,34 @@
+{
+  "name": "convex-full-stack",
+  "displayName": "Convex Full-Stack",
+  "description": "Full-stack app with Convex real-time database and TanStack Start",
+  "version": "1.0.0",
+  "dependencies": ["core"],
+  "prompts": [],
+  "exclude": [],
+  "defaults": {
+    "webFramework": "tanstack-start",
+    "addons": ["convex", "tanstack-query"]
+  },
+  "baseCommand": {
+    "command": "bunx create-convex@latest -t tanstack-start {{projectName}} --no-git",
+    "workdir": "{{parentDir}}"
+  },
+  "postProcess": {
+    "remove": ["eslint.config.mjs", ".prettierrc", ".prettierignore"],
+    "removeDeps": ["@convex-dev/eslint-plugin", "@tanstack/eslint-config", "eslint", "prettier"],
+    "addDevDeps": {
+      "@biomejs/biome": "^2.0.0",
+      "lefthook": "^1.11.0",
+      "@commitlint/cli": "^19.0.0",
+      "@commitlint/config-conventional": "^19.0.0",
+      "oxlint": "^0.16.0"
+    },
+    "updateScripts": {
+      "lint": "biome check .",
+      "lint:fix": "biome check --write .",
+      "format": "biome format --write .",
+      "check": "tsc --noEmit && biome check . && oxlint"
+    }
+  }
+}

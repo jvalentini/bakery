@@ -1,0 +1,70 @@
+# <%= projectName %>
+
+<%= description %>
+
+## Stack
+
+- **Frontend**: TanStack Start (React + TanStack Router)
+- **Backend**: Convex (real-time database)
+- **Data Fetching**: TanStack Query with Convex integration
+- **Tooling**: Biome + Oxlint + Lefthook
+
+## Getting Started
+
+```bash
+# Install dependencies
+bun install
+
+# Start Convex backend (opens dashboard on first run)
+bunx convex dev
+
+# In another terminal, start the frontend
+bun run dev
+```
+
+## Project Structure
+
+```
+<%= projectName %>/
+├── convex/              # Convex backend
+│   ├── schema.ts        # Database schema
+│   ├── myFunctions.ts   # Query and mutation functions
+│   └── _generated/      # Auto-generated types
+├── src/
+│   ├── routes/          # TanStack Router pages
+│   │   ├── __root.tsx
+│   │   └── index.tsx
+│   └── router.tsx       # Router configuration
+├── biome.json           # Linting config
+├── lefthook.yml         # Git hooks
+└── Makefile             # Standard commands
+```
+
+## Convex + TanStack Query
+
+Data fetching uses `@convex-dev/react-query` for seamless integration:
+
+```typescript
+import { useQuery } from '@tanstack/react-query';
+import { convexQuery } from '@convex-dev/react-query';
+import { api } from '../convex/_generated/api';
+
+function Messages() {
+  const { data } = useQuery(convexQuery(api.myFunctions.listItems, {}));
+  return <ul>{data?.map(item => <li key={item._id}>{item.name}</li>)}</ul>;
+}
+```
+
+## Commands
+
+```bash
+make install     # Install dependencies
+make dev         # Run development server
+make check       # Run typecheck + lint + oxlint
+make test        # Run tests
+make build       # Build for production
+```
+
+## License
+
+<%= license %><% if (author) { %> - <%= author %><% } %>

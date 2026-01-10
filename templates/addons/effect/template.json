@@ -1,0 +1,14 @@
+{
+  "name": "effect",
+  "displayName": "Effect-ts",
+  "description": "Type-safe functional programming with Effect-ts",
+  "version": "1.0.0",
+  "dependencies": [],
+  "prompts": [],
+  "exclude": [],
+  "postProcess": {
+    "addDeps": {
+      "effect": "^3.12.0"
+    }
+  }
+}

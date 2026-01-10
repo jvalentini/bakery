@@ -1,37 +1,37 @@
-import * as fs from 'node:fs';
-import * as path from 'node:path';
-import * as ejs from 'ejs';
+import * as fs from 'node:fs'
+import * as path from 'node:path'
+import * as ejs from 'ejs'
 
 /**
  * Context passed to EJS templates during rendering
  */
 export interface TemplateContext {
   // Project basics
-  projectName: string;
-  projectNamePascal: string;
-  projectNameCamel: string;
-  description: string;
-  author: string;
-  license: string;
-  year: number;
+  projectName: string
+  projectNamePascal: string
+  projectNameCamel: string
+  description: string
+  author: string
+  license: string
+  year: number
 
   // GitHub
-  githubUsername: string;
-  githubUrl: string;
+  githubUsername: string
+  githubUrl: string
 
   // Archetype
-  archetype: string;
-  apiFramework: string | undefined;
-  webFramework: string | undefined;
+  archetype: string
+  apiFramework: string | undefined
+  webFramework: string | undefined
 
   // Feature flags
-  addons: string[];
-  hasAddon: (name: string) => boolean;
+  addons: string[]
+  hasAddon: (name: string) => boolean
 
   // Helpers
-  kebabCase: (str: string) => string;
-  pascalCase: (str: string) => string;
-  camelCase: (str: string) => string;
+  kebabCase: (str: string) => string
+  pascalCase: (str: string) => string
+  camelCase: (str: string) => string
 }
 
 /**
@@ -39,9 +39,9 @@ export interface TemplateContext {
  */
 export interface RenderOptions {
   /** Base directory for resolving includes/partials */
-  basePath?: string;
+  basePath?: string
   /** Additional data to merge into context */
-  data?: Record<string, unknown>;
+  data?: Record<string, unknown>
 }
 
 /**
@@ -51,7 +51,7 @@ export function toKebabCase(str: string): string {
   return str
     .replace(/([a-z])([A-Z])/g, '$1-$2')
     .replace(/[_\s]+/g, '-')
-    .toLowerCase();
+    .toLowerCase()
 }
 
 /**
@@ -61,34 +61,34 @@ export function toPascalCase(str: string): string {
   return str
     .split(/[-_\s]+/)
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join('');
+    .join('')
 }
 
 /**
  * Convert string to camelCase
  */
 export function toCamelCase(str: string): string {
-  const pascal = toPascalCase(str);
-  return pascal.charAt(0).toLowerCase() + pascal.slice(1);
+  const pascal = toPascalCase(str)
+  return pascal.charAt(0).toLowerCase() + pascal.slice(1)
 }
 
 /**
  * Create a template context from project configuration
  */
 export function createTemplateContext(config: {
-  projectName: string;
-  description: string;
-  author: string;
-  license: string;
-  githubUsername: string;
-  archetype: string;
-  apiFramework: string | undefined;
-  webFramework: string | undefined;
-  addons: string[];
+  projectName: string
+  description: string
+  author: string
+  license: string
+  githubUsername: string
+  archetype: string
+  apiFramework: string | undefined
+  webFramework: string | undefined
+  addons: string[]
 }): TemplateContext {
   const githubUrl = config.githubUsername
     ? `https://github.com/${config.githubUsername}/${config.projectName}`
-    : '';
+    : ''
 
   return {
     projectName: config.projectName,
@@ -108,7 +108,7 @@ export function createTemplateContext(config: {
     kebabCase: toKebabCase,
     pascalCase: toPascalCase,
     camelCase: toCamelCase,
-  };
+  }
 }
 
 /**
@@ -117,22 +117,22 @@ export function createTemplateContext(config: {
 export function renderTemplate(
   template: string,
   context: TemplateContext,
-  options: RenderOptions = {}
+  options: RenderOptions = {},
 ): string {
   const ejsOptions: ejs.Options = {
     async: false,
-  };
-
-  if (options.basePath) {
-    ejsOptions.root = options.basePath;
-    ejsOptions.views = [options.basePath];
   }
 
-  const data = { ...context, ...options.data };
+  if (options.basePath) {
+    ejsOptions.root = options.basePath
+    ejsOptions.views = [options.basePath]
+  }
+
+  const data = { ...context, ...options.data }
 
   // ejs.render with async: false returns string synchronously
-  const result = ejs.render(template, data, ejsOptions);
-  return result as string;
+  const result = ejs.render(template, data, ejsOptions)
+  return result as string
 }
 
 /**
@@ -141,12 +141,12 @@ export function renderTemplate(
 export function renderTemplateFile(
   templatePath: string,
   context: TemplateContext,
-  options: RenderOptions = {}
+  options: RenderOptions = {},
 ): string {
-  const template = fs.readFileSync(templatePath, 'utf-8');
-  const basePath = options.basePath ?? path.dirname(templatePath);
+  const template = fs.readFileSync(templatePath, 'utf-8')
+  const basePath = options.basePath ?? path.dirname(templatePath)
 
-  return renderTemplate(template, context, { ...options, basePath });
+  return renderTemplate(template, context, { ...options, basePath })
 }
 
 /**
@@ -156,48 +156,48 @@ export function renderTemplateFile(
 export function processTemplateDirectory(
   templateDir: string,
   context: TemplateContext,
-  options: RenderOptions = {}
+  options: RenderOptions = {},
 ): Map<string, string> {
-  const results = new Map<string, string>();
+  const results = new Map<string, string>()
 
   function processDir(dir: string, relativePath: string = ''): void {
-    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    const entries = fs.readdirSync(dir, { withFileTypes: true })
 
     for (const entry of entries) {
-      const fullPath = path.join(dir, entry.name);
-      const relPath = path.join(relativePath, entry.name);
+      const fullPath = path.join(dir, entry.name)
+      const relPath = path.join(relativePath, entry.name)
 
       if (entry.isDirectory()) {
         // Recursively process subdirectories
-        processDir(fullPath, relPath);
+        processDir(fullPath, relPath)
       } else if (entry.isFile()) {
-        let outputPath = relPath;
-        let content: string;
+        let outputPath = relPath
+        let content: string
 
         if (entry.name.endsWith('.ejs')) {
           // Render EJS template and remove .ejs extension
-          outputPath = relPath.slice(0, -4);
+          outputPath = relPath.slice(0, -4)
           content = renderTemplateFile(fullPath, context, {
             ...options,
             basePath: templateDir,
-          });
+          })
         } else {
           // Copy non-template files as-is
-          content = fs.readFileSync(fullPath, 'utf-8');
+          content = fs.readFileSync(fullPath, 'utf-8')
         }
 
         // Process output path for template variables (e.g., {{projectName}}.ts)
         outputPath = outputPath
           .replace(/\{\{projectName\}\}/g, context.projectName)
-          .replace(/\{\{projectNamePascal\}\}/g, context.projectNamePascal);
+          .replace(/\{\{projectNamePascal\}\}/g, context.projectNamePascal)
 
-        results.set(outputPath, content);
+        results.set(outputPath, content)
       }
     }
   }
 
-  processDir(templateDir);
-  return results;
+  processDir(templateDir)
+  return results
 }
 
 /**
@@ -205,13 +205,13 @@ export function processTemplateDirectory(
  */
 export function writeTemplates(templates: Map<string, string>, outputDir: string): void {
   for (const [relativePath, content] of templates) {
-    const fullPath = path.join(outputDir, relativePath);
-    const dir = path.dirname(fullPath);
+    const fullPath = path.join(outputDir, relativePath)
+    const dir = path.dirname(fullPath)
 
     if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
+      fs.mkdirSync(dir, { recursive: true })
     }
 
-    fs.writeFileSync(fullPath, content, 'utf-8');
+    fs.writeFileSync(fullPath, content, 'utf-8')
   }
 }
