@@ -25,3 +25,4 @@ bun.lockb
 
 # Binary builds
 !src/**
+.env
