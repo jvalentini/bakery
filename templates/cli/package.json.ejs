@@ -54,7 +54,7 @@
     "bun": ">=1.0.0"
   },
 <% const deps = []; if (hasAddon('zod')) deps.push('"zod": "^3.24.0"'); if (hasAddon('neverthrow')) deps.push('"neverthrow": "^8.2.0"'); %>  "dependencies": {<% if (deps.length > 0) { %>
-<%= deps.map(d => '    ' + d).join(',\n') %>
+<%- deps.map(d => '    ' + d).join(',\n') %>
   <% } %>},
   "devDependencies": {
     "@biomejs/biome": "^2.3.11",
