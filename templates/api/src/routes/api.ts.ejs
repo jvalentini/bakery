@@ -5,14 +5,22 @@ import { zValidator } from '@hono/zod-validator'
 import { Hono } from 'hono'
 <% if (hasAddon('zod')) { -%>
 import { z } from 'zod'
+// BAKERY:INJECT:imports
+// BAKERY:END:imports
 
 const ItemSchema = z.object({
   name: z.string().min(1),
   description: z.string().optional(),
 })
+// BAKERY:INJECT:schemas
+// BAKERY:END:schemas
 
 type Item = z.infer<typeof ItemSchema> & { id: string; createdAt: string }
+// BAKERY:INJECT:types
+// BAKERY:END:types
 <% } else { -%>
+// BAKERY:INJECT:imports
+// BAKERY:END:imports
 
 interface Item {
   id: string
@@ -20,6 +28,8 @@ interface Item {
   description?: string
   createdAt: string
 }
+// BAKERY:INJECT:types
+// BAKERY:END:types
 <% } -%>
 
 export const apiRoutes = new Hono()
@@ -76,18 +86,29 @@ apiRoutes.delete('/items/:id', (c) => {
   items.splice(index, 1)
   return c.json({ success: true })
 })
+
+// BAKERY:INJECT:routes
+// BAKERY:END:routes
 <% } else if (apiFramework === 'express') { -%>
 import { Router } from 'express'
 <% if (hasAddon('zod')) { -%>
 import { z } from 'zod'
+// BAKERY:INJECT:imports
+// BAKERY:END:imports
 
 const ItemSchema = z.object({
   name: z.string().min(1),
   description: z.string().optional(),
 })
+// BAKERY:INJECT:schemas
+// BAKERY:END:schemas
 
 type Item = z.infer<typeof ItemSchema> & { id: string; createdAt: string }
+// BAKERY:INJECT:types
+// BAKERY:END:types
 <% } else { -%>
+// BAKERY:INJECT:imports
+// BAKERY:END:imports
 
 interface Item {
   id: string
@@ -95,6 +116,8 @@ interface Item {
   description?: string
   createdAt: string
 }
+// BAKERY:INJECT:types
+// BAKERY:END:types
 <% } -%>
 
 export const apiRoutes = Router()
@@ -157,18 +180,29 @@ apiRoutes.delete('/items/:id', (req, res) => {
   items.splice(index, 1)
   res.json({ success: true })
 })
+
+// BAKERY:INJECT:routes
+// BAKERY:END:routes
 <% } else if (apiFramework === 'elysia') { -%>
 import { Elysia, t } from 'elysia'
 <% if (hasAddon('zod')) { -%>
 import { z } from 'zod'
+// BAKERY:INJECT:imports
+// BAKERY:END:imports
 
 const ItemSchema = z.object({
   name: z.string().min(1),
   description: z.string().optional(),
 })
+// BAKERY:INJECT:schemas
+// BAKERY:END:schemas
 
 export type Item = z.infer<typeof ItemSchema> & { id: string; createdAt: string }
+// BAKERY:INJECT:types
+// BAKERY:END:types
 <% } else { -%>
+// BAKERY:INJECT:imports
+// BAKERY:END:imports
 
 export interface Item {
   id: string
@@ -176,6 +210,8 @@ export interface Item {
   description?: string
   createdAt: string
 }
+// BAKERY:INJECT:types
+// BAKERY:END:types
 <% } -%>
 
 // In-memory store (replace with your database)
@@ -262,4 +298,6 @@ export const apiRoutes = new Elysia({ prefix: '/api' })
     items.splice(index, 1)
     return { success: true }
   })
+  // BAKERY:INJECT:routes
+  // BAKERY:END:routes
 <% } -%>

@@ -1,6 +1,7 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { z } from 'zod'
+import { InjectionDefinitionSchema } from '../inject/types.js'
 
 /**
  * Schema for setup task configuration
@@ -88,6 +89,11 @@ export const ArchetypeManifestSchema = z.object({
     .default({}),
 
   tasks: z.array(SetupTaskSchema).default([]),
+
+  inject: z
+    .array(InjectionDefinitionSchema)
+    .default([])
+    .describe('Content injections into existing files'),
 })
 
 export type ArchetypeManifest = z.infer<typeof ArchetypeManifestSchema>
@@ -212,6 +218,7 @@ export function loadCoreTemplate(): LoadedTemplate | null {
         exclude: [],
         hooks: {},
         tasks: [],
+        inject: [],
       },
       path: corePath,
       isPlugin: false,

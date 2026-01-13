@@ -1,0 +1,19 @@
+import { green } from '../utils/colors.js'
+
+interface CliOptions {
+  verbose?: boolean
+  quiet?: boolean
+  debug?: boolean
+}
+
+export function runGreet(options: CliOptions): void {
+  if (options.verbose) {
+    console.log('Running greet command...')
+  }
+
+  console.log(green('Greetings from <%= projectName %>! 👋'))
+
+  if (options.verbose) {
+    console.log('Command completed successfully.')
+  }
+}

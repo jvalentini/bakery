@@ -2,6 +2,7 @@ import { execSync, spawnSync } from 'node:child_process'
 import * as fs from 'node:fs'
 import { createRequire } from 'node:module'
 import * as path from 'node:path'
+import { processInjections } from '../inject/index.js'
 import { createManifest, saveManifest } from '../sync/manifest.js'
 import {
   createTemplateContext,
@@ -203,6 +204,28 @@ function generateFromBaseCommand(
 
   applyTemplateFiles(config, outputDir, context)
   applyOverlays(config, outputDir, context)
+
+  const templates = resolveTemplates(config.archetype, config.addons)
+  for (const template of templates) {
+    if (template.manifest.inject && template.manifest.inject.length > 0) {
+      const results = processInjections({
+        projectDir: outputDir,
+        injections: template.manifest.inject,
+        addonName: template.manifest.name,
+        context,
+        templateBasePath: template.path,
+      })
+
+      for (const result of results) {
+        if (result.success) {
+          console.log(`Injected: ${result.file} @ ${result.marker} (from ${result.addon})`)
+        } else {
+          console.error(`Injection failed: ${result.file} @ ${result.marker}: ${result.error}`)
+        }
+      }
+    }
+  }
+
   writeSetupConfig(config, outputDir)
   initGitRepo(outputDir)
 }
@@ -318,6 +341,27 @@ function generateFromTemplates(
   }
 
   writeTemplates(allFiles, outputDir)
+
+  for (const template of templates) {
+    if (template.manifest.inject && template.manifest.inject.length > 0) {
+      const results = processInjections({
+        projectDir: outputDir,
+        injections: template.manifest.inject,
+        addonName: template.manifest.name,
+        context,
+        templateBasePath: template.path,
+      })
+
+      for (const result of results) {
+        if (result.success) {
+          console.log(`Injected: ${result.file} @ ${result.marker} (from ${result.addon})`)
+        } else {
+          console.error(`Injection failed: ${result.file} @ ${result.marker}: ${result.error}`)
+        }
+      }
+    }
+  }
+
   writeSetupConfig(config, outputDir)
   initGitRepo(outputDir)
 }

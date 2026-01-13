@@ -30,6 +30,7 @@ export type Addon =
   | 'tanstack-query'
   | 'tanstack-router'
   | 'tanstack-form'
+  | 'greet'
 
 export interface ProjectConfig {
   projectName: string
@@ -479,6 +480,11 @@ export async function runPrompts(): Promise<ProjectConfig> {
       value: 'release',
       label: 'Release workflow - Auto-build binaries',
       default: true,
+    })
+    devOpsOptions.push({
+      value: 'greet',
+      label: 'Greet command - Example addon with injection',
+      default: false,
     })
   }
 
