@@ -303,7 +303,7 @@ describe('Manifest Utilities', () => {
     })
 
     it('should set generatedAt timestamp', () => {
-      const before = new Date().getTime()
+      const before = Date.now()
 
       const result = createManifest(testDir, {
         bakeryVersion: '0.4.0',
@@ -311,7 +311,7 @@ describe('Manifest Utilities', () => {
         addons: [],
       })
 
-      const after = new Date().getTime()
+      const after = Date.now()
 
       expect(result.isOk()).toBe(true)
       if (result.isOk()) {
