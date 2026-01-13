@@ -4,7 +4,10 @@
     "enabled": true,
     "clientKind": "git",
     "useIgnoreFile": true
-  },
+  },<% if (webFramework === 'vue') { %>
+  "html": {
+    "experimentalFullSupportEnabled": true
+  },<% } %>
   "files": {
     "ignoreUnknown": false,
     "includes": ["**", "!**/node_modules", "!**/dist", "!**/coverage", "!**/*.lock", "!**/*.log"]
@@ -77,5 +80,17 @@
     "linter": {
       "enabled": true
     }
-  }
+  }<% if (webFramework === 'vue') { %>,
+  "overrides": [
+    {
+      "includes": ["**/*.vue"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "noUnusedVariables": "off"
+          }
+        }
+      }
+    }
+  ]<% } %>
 }
