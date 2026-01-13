@@ -1,9 +1,19 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
+import { execSync } from 'node:child_process'
 import * as fs from 'node:fs'
 import * as os from 'node:os'
 import * as path from 'node:path'
 import { generateProject, generateProjectDryRun } from '../src/wizard/generator.js'
 import type { ProjectConfig } from '../src/wizard/prompts.js'
+
+const isGitAvailable = (() => {
+  try {
+    execSync('git --version', { stdio: 'ignore' })
+    return true
+  } catch {
+    return false
+  }
+})()
 
 describe('generator', () => {
   let testDir: string
@@ -177,7 +187,7 @@ describe('generator', () => {
     expect(fs.existsSync(path.join(testDir, '.bakery', 'manifest.json'))).toBe(true)
   })
 
-  it('should create .git directory', () => {
+  it.skipIf(!isGitAvailable)('should create .git directory', () => {
     generateProject(defaultConfig, testDir)
 
     expect(fs.existsSync(path.join(testDir, '.git'))).toBe(true)

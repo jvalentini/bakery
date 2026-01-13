@@ -77,7 +77,8 @@ describe('Hash Utilities', () => {
       }
     })
 
-    it('should return error for unreadable file', () => {
+    // Skip in Docker/root environments where chmod doesn't prevent root from reading
+    it.skipIf(process.getuid?.() === 0)('should return error for unreadable file', () => {
       const filePath = path.join(testDir, 'unreadable.txt')
       fs.writeFileSync(filePath, 'content')
       fs.chmodSync(filePath, 0o000)
