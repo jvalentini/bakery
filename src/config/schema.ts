@@ -22,12 +22,10 @@ export const ApiFrameworkSchema = z.enum([
   'elysia',
 ]) satisfies z.ZodType<ApiFramework>
 
-export const WebFrameworkSchema = z.enum([
-  'react-vite',
-  'nextjs',
-  'vue',
-  'tanstack-start',
-]) satisfies z.ZodType<WebFramework>
+export const WebFrameworkSchema = z
+  .string()
+  .transform((val) => val.toLowerCase())
+  .pipe(z.enum(['react-vite', 'nextjs', 'vue', 'tanstack-start'])) satisfies z.ZodType<WebFramework>
 
 export const AddonSchema = z.enum([
   'docker',
