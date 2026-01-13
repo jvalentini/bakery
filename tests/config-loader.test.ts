@@ -27,7 +27,8 @@ describe('Config Loader', () => {
       }
     })
 
-    it('should return error when file is not readable', () => {
+    // Skip in Docker/root environments where chmod doesn't prevent root from reading
+    it.skipIf(process.getuid?.() === 0)('should return error when file is not readable', () => {
       const configPath = path.join(testDir, 'unreadable.json')
       fs.writeFileSync(configPath, '{}')
       fs.chmodSync(configPath, 0o000)
