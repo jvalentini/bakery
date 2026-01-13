@@ -43,6 +43,7 @@ export const AddonSchema = z.enum([
   'tanstack-query',
   'tanstack-router',
   'tanstack-form',
+  'greet',
 ]) satisfies z.ZodType<Addon>
 
 export const LicenseSchema = z.enum(['MIT', 'Apache-2.0', 'ISC', 'GPL-3.0', 'BSD-3-Clause'])

@@ -21,11 +21,19 @@ const MANAGED_PATTERNS = [
   'AGENTS.md',
 ]
 
+const InjectionEntrySchema = z.object({
+  marker: z.string(),
+  addon: z.string(),
+  hash: z.string(),
+})
+
 const FileEntrySchema = z.object({
   hash: z.string(),
   managed: z.boolean(),
+  injections: z.array(InjectionEntrySchema).default([]),
 })
 
+export type InjectionEntry = z.infer<typeof InjectionEntrySchema>
 export type FileEntry = z.infer<typeof FileEntrySchema>
 
 const ManifestSchema = z.object({
@@ -132,6 +140,7 @@ export function createManifest(
     fileEntries[filePath] = {
       hash: hashResult.value,
       managed: isManaged(filePath),
+      injections: [],
     }
   }
 

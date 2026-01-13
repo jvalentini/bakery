@@ -3,6 +3,7 @@
 import { createRequire } from 'node:module'
 import { z } from 'zod'
 import { handleCacheCommand } from './commands/cache.js'
+import { handleInspectCommand } from './commands/inspect.js'
 import { handleLintCommand } from './commands/lint.js'
 import { handlePluginsCommand } from './commands/plugins.js'
 import { handleSyncCommand } from './commands/sync.js'
@@ -59,6 +60,7 @@ ${bold('COMMANDS:')}
   sync                 Update project from latest templates
   lint                 Lint templates for valid JSON, EJS syntax, required files
   test                 Run template validation tests (smoke, quick, full)
+  inspect              Show injection points in a generated project
 
 ${bold('OPTIONS:')}
   -o, --output <dir>   Output directory (default: ./<project-name>)
@@ -236,6 +238,11 @@ async function main(): Promise<void> {
 
     if (firstArg === 'test') {
       await handleTestCommand(args.slice(1))
+      process.exit(0)
+    }
+
+    if (firstArg === 'inspect') {
+      await handleInspectCommand(args.slice(1))
       process.exit(0)
     }
 

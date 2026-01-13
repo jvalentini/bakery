@@ -2,6 +2,8 @@
 
 import { error, green } from './utils/colors.js'
 import { ArgumentError } from './utils/errors.js'
+// BAKERY:INJECT:imports
+// BAKERY:END:imports
 
 const VERSION = '0.1.0'
 
@@ -116,6 +118,8 @@ async function main(): Promise<void> {
       case 'version':
         console.log(VERSION)
         break
+      // BAKERY:INJECT:commands
+      // BAKERY:END:commands
       default:
         if (command) {
           throw new ArgumentError(`Unknown command: ${command}`)

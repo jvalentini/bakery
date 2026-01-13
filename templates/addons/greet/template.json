@@ -1,0 +1,28 @@
+{
+  "name": "greet",
+  "displayName": "Greet Command",
+  "description": "Adds a customizable greet command to your CLI",
+  "version": "1.0.0",
+  "type": "addon",
+  "inject": [
+    {
+      "file": "src/cli.ts",
+      "marker": "imports",
+      "content": "import { runGreet } from './commands/greet.js'",
+      "position": "end"
+    },
+    {
+      "file": "src/cli.ts",
+      "marker": "commands",
+      "content": "case 'greet':\n  runGreet(options)\n  break",
+      "position": "end"
+    },
+    {
+      "file": "package.json",
+      "jsonPath": "$.scripts",
+      "json": {
+        "greet": "bun run src/cli.ts greet"
+      }
+    }
+  ]
+}

@@ -3,8 +3,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 <% } -%>
 import { useState } from 'react'
+// BAKERY:INJECT:imports
+// BAKERY:END:imports
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+
+// BAKERY:INJECT:hooks
+// BAKERY:END:hooks
 
 <% if (hasAddon('tanstack-query')) { -%>
 interface Message {
@@ -108,8 +113,13 @@ export function App() {
 'use client'
 
 import { useEffect, useState } from 'react'
+// BAKERY:INJECT:imports
+// BAKERY:END:imports
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+
+// BAKERY:INJECT:hooks
+// BAKERY:END:hooks
 
 interface ApiInfo {
   message: string

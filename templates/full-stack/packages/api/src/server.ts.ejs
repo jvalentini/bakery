@@ -6,6 +6,8 @@ import { logger } from 'hono/logger'
 import { z } from 'zod'
 import { zValidator } from '@hono/zod-validator'
 <% } -%>
+// BAKERY:INJECT:imports
+// BAKERY:END:imports
 
 const app = new Hono()
 
@@ -16,6 +18,8 @@ app.use(
     origin: ['http://localhost:5173', 'http://localhost:3000'],
   }),
 )
+// BAKERY:INJECT:middleware
+// BAKERY:END:middleware
 
 app.get('/health', (c) => c.json({ status: 'healthy', timestamp: new Date().toISOString() }))
 app.get('/api', (c) => c.json({ message: 'Welcome to <%= projectName %> API' }))
@@ -36,6 +40,9 @@ app.post('/api/messages', async (c) => {
 })
 <% } -%>
 
+// BAKERY:INJECT:routes
+// BAKERY:END:routes
+
 app.notFound((c) => c.json({ error: 'Not Found' }, 404))
 
 const port = parseInt(process.env.PORT || '3001', 10)
@@ -47,6 +54,8 @@ import express, { type Express } from 'express'
 <% if (hasAddon('zod')) { -%>
 import { z } from 'zod'
 <% } -%>
+// BAKERY:INJECT:imports
+// BAKERY:END:imports
 
 const app: Express = express()
 
@@ -61,6 +70,8 @@ app.use((req, res, next) => {
   }
   next()
 })
+// BAKERY:INJECT:middleware
+// BAKERY:END:middleware
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'healthy', timestamp: new Date().toISOString() })
@@ -91,6 +102,9 @@ app.post('/api/messages', (req, res) => {
 })
 <% } -%>
 
+// BAKERY:INJECT:routes
+// BAKERY:END:routes
+
 app.use((_req, res) => res.status(404).json({ error: 'Not Found' }))
 
 const port = parseInt(process.env.PORT || '3001', 10)
@@ -99,6 +113,8 @@ app.listen(port, () => console.log(`🚀 API running at http://localhost:${port}
 export default app
 <% } else if (apiFramework === 'elysia') { -%>
 import { Elysia, t } from 'elysia'
+// BAKERY:INJECT:imports
+// BAKERY:END:imports
 
 const app = new Elysia()
   .get('/health', () => ({ status: 'healthy', timestamp: new Date().toISOString() }))
@@ -114,6 +130,8 @@ const app = new Elysia()
       body: t.Object({ text: t.String() }),
     },
   )
+  // BAKERY:INJECT:routes
+  // BAKERY:END:routes
   .onError(({ code }) => {
     if (code === 'NOT_FOUND') return { error: 'Not Found' }
     return { error: 'Internal Server Error' }
