@@ -6,5 +6,6 @@
   "dependencies": ["core"],
   "prompts": [],
   "exclude": [],
-  "tasks": []
+  "tasks": [],
+  "inject": []
 }

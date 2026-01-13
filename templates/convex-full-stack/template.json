@@ -60,5 +60,6 @@
       "condition": "if-convex",
       "continueOnError": true
     }
-  ]
+  ],
+  "inject": []
 }
