@@ -205,6 +205,11 @@ export function processTemplateDirectory(
  */
 export function writeTemplates(templates: Map<string, string>, outputDir: string): void {
   for (const [relativePath, content] of templates) {
+    // Skip writing empty files (templates that render to empty content for unsupported frameworks)
+    if (!content.trim()) {
+      continue
+    }
+
     const fullPath = path.join(outputDir, relativePath)
     const dir = path.dirname(fullPath)
 

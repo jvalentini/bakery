@@ -4,6 +4,12 @@ import * as fs from 'node:fs'
 import * as os from 'node:os'
 import * as path from 'node:path'
 
+function stripAnsi(input: string): string {
+  const ansiEscape = String.fromCharCode(27)
+  const ansiPattern = new RegExp(`${ansiEscape}\\[[0-9;]*m`, 'g')
+  return input.replace(ansiPattern, '')
+}
+
 function runCli(args: string[]): Promise<{ stdout: string; stderr: string; exitCode: number }> {
   return new Promise((resolve) => {
     const proc = spawn('bun', ['run', 'src/cli.ts', ...args], {
@@ -22,7 +28,11 @@ function runCli(args: string[]): Promise<{ stdout: string; stderr: string; exitC
     })
 
     proc.on('close', (code) => {
-      resolve({ stdout, stderr, exitCode: code ?? 0 })
+      resolve({
+        stdout: stripAnsi(stdout),
+        stderr: stripAnsi(stderr),
+        exitCode: code ?? 0,
+      })
     })
   })
 }
@@ -37,8 +47,8 @@ function runCliSync(
     timeout: 30000,
   })
   return {
-    stdout: result.stdout ?? '',
-    stderr: result.stderr ?? '',
+    stdout: stripAnsi(result.stdout ?? ''),
+    stderr: stripAnsi(result.stderr ?? ''),
     exitCode: result.status ?? 0,
   }
 }
