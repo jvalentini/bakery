@@ -62,7 +62,7 @@ jobs:
         run: bun run build:${{ matrix.target }}
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: bakery-${{ matrix.target }}
           path: dist/bakery-${{ matrix.target }}*
